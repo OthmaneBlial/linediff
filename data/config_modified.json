@@ -1,0 +1,51 @@
+{
+  "application": {
+    "name": "MyApp",
+    "version": "1.2.0",
+    "environment": "production",
+    "debug": false
+  },
+  "database": {
+    "host": "prod-db.example.com",
+    "port": 5432,
+    "name": "myapp_db",
+    "ssl": true,
+    "credentials": {
+      "username": "app_user",
+      "password": "${DB_PASSWORD}"
+    },
+    "connection_pool": {
+      "min": 5,
+      "max": 20
+    }
+  },
+  "cache": {
+    "enabled": true,
+    "redis": {
+      "host": "redis.example.com",
+      "port": 6379,
+      "ttl": 3600
+    }
+  },
+  "features": {
+    "authentication": true,
+    "logging": true,
+    "metrics": true,
+    "rate_limiting": true
+  },
+  "api": {
+    "base_url": "https://api.example.com",
+    "timeout": 60,
+    "retries": 5,
+    "rate_limit": {
+      "requests_per_minute": 1000
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "datadog": {
+      "api_key": "${DD_API_KEY}",
+      "app_key": "${DD_APP_KEY}"
+    }
+  }
+}

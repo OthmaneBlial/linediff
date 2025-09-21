@@ -1,0 +1,26 @@
+{
+  "application": {
+    "name": "MyApp",
+    "version": "1.0.0",
+    "environment": "development"
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "myapp_db",
+    "credentials": {
+      "username": "admin",
+      "password": "secret"
+    }
+  },
+  "features": {
+    "authentication": true,
+    "logging": true,
+    "metrics": false
+  },
+  "api": {
+    "base_url": "https://api.example.com",
+    "timeout": 30,
+    "retries": 3
+  }
+}

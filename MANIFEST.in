@@ -1,0 +1,20 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+include pyproject.toml
+
+exclude *.pyc
+exclude *.pyo
+exclude __pycache__
+exclude .pytest_cache
+exclude .coverage
+exclude .tox
+exclude build
+exclude dist
+exclude *.egg-info
+
+recursive-include tests *.py
+recursive-exclude tests *.pyc
+
+global-exclude *.log
