@@ -4,10 +4,14 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/OthmaneBlial/linediff/actions/workflows/ci.yml/badge.svg)](https://github.com/OthmaneBlial/linediff/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/OthmaneBlial/linediff/branch/main/graph/badge.svg)](https://codecov.io/gh/OthmaneBlial/linediff)
 [![Downloads](https://pepy.tech/badge/linediff)](https://pepy.tech/project/linediff)
 
 A lightweight, syntax-aware diff tool for Python with tree-sitter integration. Linediff understands code structure using tree-sitter parsers, providing more meaningful diffs than traditional line-based tools.
+
+## Downloads
+
+- Install with PyPI: `pip install linediff`
+- Tracking via [pepy](https://pepy.tech/project/linediff)
 
 ## Table of Contents
 
@@ -369,7 +373,7 @@ Comprehensive documentation is available in the [`docs/`](docs/) directory:
 - [FAQ](docs/faq.md)
 - [Contributing Guide](CONTRIBUTING.md)
 
-For online documentation, visit [https://othmaneblial.github.io/linediff/](https://othmaneblial.github.io/linediff/).
+For online documentation, visit [https://github.com/OthmaneBlial/linediff/blob/main/docs/index.md](https://github.com/OthmaneBlial/linediff/blob/main/docs/index.md).
 
 ## 🤝 Contributing
 
