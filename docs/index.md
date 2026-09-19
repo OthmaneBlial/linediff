@@ -11,6 +11,7 @@ Linediff compares UTF-8 text in a terminal and can add a Python definition summa
 - [Parser support](PARSER_SUPPORT.md)
 - [Input and complexity limits](LIMITS.md)
 - [Dependency checks](DEPENDENCIES.md)
+- [Test evidence and branch coverage](QUALITY.md)
 - [Developer API](api.md)
 - [FAQ](faq.md)
 - [Contribution guide](../CONTRIBUTING.md)

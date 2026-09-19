@@ -1,6 +1,6 @@
 # Roadmap de Linediff
 
-> Audit du dépôt local au 19 septembre 2026. Ce document décrit du travail **à faire** : aucune tâche ci-dessous n'est considérée comme réalisée. Les tags locaux `v0.1.2` et `v0.1.3` existent, mais cet audit ne vérifie ni PyPI, ni les exécutions GitHub Actions, ni une GitHub Release, ni l'audience du projet.
+> Diagnostic initial du dépôt local au 19 septembre 2026; les constats ci-dessous conservent l'état de départ. Les cases et les notes de progression plus bas décrivent les travaux et vérifications effectués depuis cet audit. Les tags locaux `v0.1.2` et `v0.1.3` existaient déjà au départ; les preuves distantes sont consignées séparément.
 
 ## Diagnostic et cap produit
 
@@ -166,7 +166,7 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 4.1 Transformer la suite en garde-fou d'exactitude (P0)
 
-- [ ] **En cours (19 septembre 2026).** Assertions permissives sur codes de sortie, langues, entrées invalides et sorties non vides remplacées par oracles ciblés; les sous-processus de test utilisent l'interpréteur du paquet installé sans `PYTHONPATH` manuel. Suite complète verte sur macOS; mesure `pytest-cov` locale à 74 % globale mais seulement 43 % pour `__main__` car les sous-processus CLI ne sont pas agrégés. Mutation ciblée et couverture de branches critiques restent à produire.
+- [ ] **En cours (19 septembre 2026).** Assertions permissives remplacées par oracles ciblés; les tests normaux utilisent le paquet installé sans `PYTHONPATH` manuel. Quatre mutations isolées (saut final, code de sortie, langue forcée, route structurelle) sont toutes détectées. Une mesure locale `coverage.py 7.16.1` qui agrège les sous-processus donne 87 % global, 94 % pour `diff.py` et `inputs.py`, 77 % pour `__main__.py`; méthode et limites dans `docs/QUALITY.md`. La suite complète et les mutations passent sur macOS; leur nouveau gate CI Linux reste à observer avant de cocher.
 
 - **Objectif :** empêcher qu'une CI verte masque la perte de données ou l'absence de diff syntaxique.
 - **Changements :** remplacer les assertions permissives (`code in [0,1]`, sortie simplement non vide) par des oracles précis; séparer tests unitaires, CLI, Git réel, parseurs optionnels et packaging; mesurer la couverture des branches critiques plutôt que viser un pourcentage global seul.
@@ -188,7 +188,7 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 4.3 Sécuriser les entrées et la chaîne de dépendances (P1)
 
-- [ ] **En cours (19 septembre 2026).** La CLI refuse les contrôles de terminal et caractères bidi dans le texte et les labels; le mode Git réduit le contenu dangereux à un statut sans l'afficher. Les opérandes doivent être des fichiers réguliers, avec contrôle supplémentaire après ouverture non bloquante; un symlink vers un fichier régulier passe, une FIFO est rejetée. Des tests couvrent fichiers, stdin, labels Git, binaire NUL et FIFO. Politique de signalement ajoutée dans `SECURITY.md`. Scan local Gitleaks de l'historique sans résultat; audit local des dépendances complètes sans vulnérabilité connue après mise à jour du `pip` de test. Le job CI de sécurité est ajouté mais pas encore observé sur GitHub; le processus de publication reste à traiter.
+- [ ] **En cours (19 septembre 2026).** La CLI refuse les contrôles de terminal et caractères bidi dans le texte et les labels; le mode Git réduit le contenu dangereux à un statut sans l'afficher. Les opérandes doivent être des fichiers réguliers, avec contrôle supplémentaire après ouverture non bloquante; un symlink vers un fichier régulier passe, une FIFO est rejetée. Des tests couvrent fichiers, stdin, labels Git, binaire NUL et FIFO. Politique de signalement ajoutée dans `SECURITY.md`. Scan local Gitleaks de l'historique sans résultat; audit local des dépendances complètes sans vulnérabilité connue après mise à jour du `pip` de test. Le job CI de sécurité a réussi dans le run `35444327149`; le processus de publication reste à traiter.
 
 - **Objectif :** réduire les surprises pour un outil qui lit des fichiers arbitraires et un script qui publie des artefacts.
 - **Changements :** auditer exceptions de fichiers, symlinks, décodage, profondeur AST, sorties de terminal et contenu Git non fiable; ne pas exécuter le contenu comparé; auditer dépendances et grammaires, figer une stratégie de mise à jour, documenter signalement de vulnérabilité; ne jamais charger des secrets dans les jobs de PR.
@@ -247,7 +247,7 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 6.2 Livrer d'abord un paquet Python installable, puis des exécutables autonomes
 
-- [ ] **En cours (19 septembre 2026).** Un script PyInstaller 6.22.3 prépare une archive autonome du CLI de base, un checksum SHA-256 et des smoke tests avant/après extraction (`--help`, exactitude, `--check-only`, structure Python, fallback, protocole Git). Un build local macOS arm64 a passé après correction d'un oracle de test. Le workflow candidat prévoit Linux, macOS et Windows, mais ses jobs n'ont pas encore été exécutés; aucune archive n'est publiée. Les grammaires optionnelles ne sont pas embarquées.
+- [ ] **En cours (19 septembre 2026).** Un script PyInstaller 6.22.3 prépare une archive autonome du CLI de base, un checksum SHA-256 et des smoke tests avant/après extraction (`--help`, exactitude, `--check-only`, structure Python, fallback, protocole Git). Un build local macOS arm64 a passé après correction d'un oracle de test. Les jobs `standalone` du run CI `35444327149` ont réussi sur Linux, macOS et Windows; le workflow candidat versionné n'a pas encore été exécuté et aucune archive n'est publiée. Les grammaires optionnelles ne sont pas embarquées.
 
 - **Objectif :** offrir des téléchargements utiles aux développeurs avec ou sans environnement Python.
 - **Changements :** publier wheel et sdist vérifiés; définir une recette de binaire autonome (par exemple PyInstaller) pour les OS/architectures réellement testés, inclure les grammaires nécessaires ou documenter explicitement le mode texte; créer archives, SHA-256 et instructions de désinstallation; comparer taille, démarrage et comportement au paquet Python.

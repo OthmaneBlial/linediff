@@ -45,6 +45,9 @@ jobs:
       - run: python -m pytest -q
         env:
           LINEDIFF_EXPECT_PARSERS: none
+      - name: Check critical mutation probes
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        run: python scripts/mutation_probe.py
 
   grammars:
     strategy:
