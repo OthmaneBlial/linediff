@@ -116,6 +116,29 @@ jobs:
           path: dist/
           if-no-files-found: error
 
+  package-smoke:
+    needs: package
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.8', '3.14']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: linediff-distributions
+          path: dist/
+      - name: Install wheel and source archive outside checkout
+        run: python scripts/smoke_dist.py dist
+
   standalone:
     needs: [quality, test, grammars, security]
     strategy:
