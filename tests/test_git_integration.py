@@ -59,7 +59,9 @@ class GitIntegrationTests(unittest.TestCase):
         env = os.environ.copy()
         env["PYTHONDONTWRITEBYTECODE"] = "1"
         command = shlex.quote(sys.executable) + " -m linediff"
-        result = self.git("-c", "diff.external=" + command, "diff", "--cached", "--ext-diff", env=env)
+        result = self.git(
+            "-c", "diff.external=" + command, "diff", "--cached", "--ext-diff", env=env
+        )
         output = result.stdout
         self.assertIn("--- /dev/null\n+++ b/added.py", output)
         self.assertIn("--- a/deleted.py\n+++ /dev/null", output)
@@ -85,7 +87,18 @@ class GitIntegrationTests(unittest.TestCase):
         old = self.repository / "binary.dat"
         new = self.repository / "added.py"
         result = subprocess.run(
-            [sys.executable, "-m", "linediff", "sample.dat", str(old), "oldhex", "100644", str(new), "newhex", "100644"],
+            [
+                sys.executable,
+                "-m",
+                "linediff",
+                "sample.dat",
+                str(old),
+                "oldhex",
+                "100644",
+                str(new),
+                "newhex",
+                "100644",
+            ],
             cwd=self.repository,
             env=env,
             capture_output=True,

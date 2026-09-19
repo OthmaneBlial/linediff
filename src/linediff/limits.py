@@ -12,10 +12,12 @@ class DiffLimitError(ValueError):
 
 
 def validate_text(content: str, label: str) -> None:
-    if len(content.encode('utf-8')) > MAX_INPUT_BYTES:
+    if len(content.encode("utf-8")) > MAX_INPUT_BYTES:
         raise DiffLimitError("{} exceeds the 4 MiB UTF-8 input limit".format(label))
     lines = content.splitlines(keepends=True)
     if len(lines) > MAX_LINES:
         raise DiffLimitError("{} exceeds the 20,000-line input limit".format(label))
     if any(len(line) > MAX_LINE_CHARS for line in lines):
-        raise DiffLimitError("{} has a line longer than 200,000 characters".format(label))
+        raise DiffLimitError(
+            "{} has a line longer than 200,000 characters".format(label)
+        )

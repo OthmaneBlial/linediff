@@ -35,8 +35,13 @@ class CliContractTests(unittest.TestCase):
         fallback = run_cli("--diagnostics", "--display", "structural", old, new)
         self.assertIn(b"route=text-fallback", fallback.stderr)
         self.assertIn(b"no verified structural view", fallback.stderr)
-        python = run_cli("--diagnostics", "--display", "structural",
-                         "tests/fixtures/moved_function.old.py", "tests/fixtures/moved_function.new.py")
+        python = run_cli(
+            "--diagnostics",
+            "--display",
+            "structural",
+            "tests/fixtures/moved_function.old.py",
+            "tests/fixtures/moved_function.new.py",
+        )
         self.assertEqual(python.returncode, 0, python.stderr.decode(errors="replace"))
         self.assertIn(b"route=structural; parser=", python.stderr)
         self.assertNotIn(b"Diagnostic:", python.stdout)
@@ -68,7 +73,9 @@ class CliContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             binary = Path(directory, "binary.dat")
             binary.write_bytes(b"abc\x00def")
-            result = run_cli("--check-only", str(binary), "tests/fixtures/replace.new.txt")
+            result = run_cli(
+                "--check-only", str(binary), "tests/fixtures/replace.new.txt"
+            )
             self.assertEqual(result.returncode, 2)
             self.assertIn(b"Binary", result.stderr)
 
@@ -82,7 +89,10 @@ class CliContractTests(unittest.TestCase):
         self.assertEqual(same.returncode, 0)
 
     def test_stdin_rejects_git_patch_and_invalid_bytes(self):
-        for payload in (b"--- a/file\n+++ b/file\n@@ -1 +1 @@\n-a\n+b\n", b"\xff\n---\nabc"):
+        for payload in (
+            b"--- a/file\n+++ b/file\n@@ -1 +1 @@\n-a\n+b\n",
+            b"\xff\n---\nabc",
+        ):
             with self.subTest(payload=payload):
                 result = run_cli(input_bytes=payload)
                 self.assertEqual(result.returncode, 2)
@@ -94,12 +104,18 @@ class CliContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             Path(directory, "-old.txt").write_text("old\n", encoding="utf-8")
             Path(directory, "-new.txt").write_text("new\n", encoding="utf-8")
-            result = run_cli("--check-only", "--", "-old.txt", "-new.txt", cwd=directory)
-            self.assertEqual(result.returncode, 1, result.stderr.decode(errors="replace"))
+            result = run_cli(
+                "--check-only", "--", "-old.txt", "-new.txt", cwd=directory
+            )
+            self.assertEqual(
+                result.returncode, 1, result.stderr.decode(errors="replace")
+            )
 
     def test_unknown_language_is_a_usage_error(self):
         result = run_cli(
-            "--language", "unknown-grammar", "tests/fixtures/replace.old.txt",
+            "--language",
+            "unknown-grammar",
+            "tests/fixtures/replace.old.txt",
             "tests/fixtures/replace.new.txt",
         )
         self.assertEqual(result.returncode, 2)
@@ -108,7 +124,13 @@ class CliContractTests(unittest.TestCase):
 
     def test_closed_output_pipe_does_not_print_traceback(self):
         process = subprocess.Popen(
-            [sys.executable, "-m", "linediff", "tests/fixtures/long_line.old.txt", "tests/fixtures/long_line.new.txt"],
+            [
+                sys.executable,
+                "-m",
+                "linediff",
+                "tests/fixtures/long_line.old.txt",
+                "tests/fixtures/long_line.new.txt",
+            ],
             cwd=ROOT,
             env=ENV,
             stdout=subprocess.PIPE,

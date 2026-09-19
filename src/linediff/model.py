@@ -16,5 +16,5 @@ class Atom:
 class ListNode:
     """Container of syntax elements and its position within the parsed input."""
 
-    children: List[Union['ListNode', Atom]]
+    children: List[Union["ListNode", Atom]]
     position: int

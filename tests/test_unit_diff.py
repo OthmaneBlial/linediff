@@ -1,4 +1,3 @@
-import pytest
 from linediff.diff import compute_diff, parse_to_tree, DiffEngine, Atom, ListNode
 from linediff.parser import parse_to_tree as parser_parse_to_tree
 
@@ -24,9 +23,9 @@ def test_compute_diff_simple():
     left = "line1\nline2\n"
     right = "line1\nmodified\n"
     diff = compute_diff(left, right)
-    assert diff[2] == '@@ -1,2 +1,2 @@'
-    assert '-line2' in diff
-    assert '+modified' in diff
+    assert diff[2] == "@@ -1,2 +1,2 @@"
+    assert "-line2" in diff
+    assert "+modified" in diff
 
 
 def test_diff_engine_lcs():
@@ -57,6 +56,7 @@ def test_listnode_dataclass():
 def test_count_nodes():
     """Test count_nodes utility."""
     from linediff.diff import count_nodes
+
     atom = Atom("test", 0)
     assert count_nodes(atom) == 1
     listnode = ListNode([atom], 0)
@@ -69,9 +69,9 @@ def test_fallback_diff():
     left = ["line1\n", "line2\n"]
     right = ["line1\n", "modified\n"]
     diff = engine.fallback_diff(left, right)
-    assert diff[2] == '@@ -1,2 +1,2 @@'
-    assert '-line2' in diff
-    assert '+modified' in diff
+    assert diff[2] == "@@ -1,2 +1,2 @@"
+    assert "-line2" in diff
+    assert "+modified" in diff
 
 
 def test_parser_fallback():

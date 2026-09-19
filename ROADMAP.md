@@ -177,6 +177,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 4.2 Faire de la CI une barrière de qualité (P0)
 
+- [ ] **En cours (19 septembre 2026).** Workflow refait avec permissions `contents: read`, contrôle Ruff bloquant, matrice base 3 OS × Python 3.8–3.14, profils de grammaires Python/complet sur 3 OS, puis build wheel/sdist, `twine check` et smoke hors checkout. `actionlint`, Ruff, suite locale et installation des deux artefacts passent sur macOS. Exécution GitHub Actions de la nouvelle matrice et inspection des logs non encore vérifiées; ne pas déclarer la CI verte.
+
 - **Objectif :** prouver que le produit s'installe, fonctionne et se construit sur les plateformes annoncées.
 - **Changements :** matrice Python réellement supportée sur Linux/macOS/Windows, jobs avec/sans grammaires, lint strict, format, typage si l'API le revendique, tests Git, build wheel/sdist, installation puis smoke test des artefacts; fixer permissions minimales et versions d'actions; supprimer `--exit-zero` des contrôles attendus bloquants.
 - **Fichiers :** `.github/workflows/ci.yml`, `pyproject.toml`, `tests/`, éventuellement scripts de smoke.

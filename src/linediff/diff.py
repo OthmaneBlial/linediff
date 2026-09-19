@@ -21,10 +21,13 @@ class DiffEngine:
         for old_index in range(1, rows + 1):
             for new_index in range(1, columns + 1):
                 if left[old_index - 1] == right[new_index - 1]:
-                    scores[old_index][new_index] = scores[old_index - 1][new_index - 1] + 1
+                    scores[old_index][new_index] = (
+                        scores[old_index - 1][new_index - 1] + 1
+                    )
                 else:
                     scores[old_index][new_index] = max(
-                        scores[old_index - 1][new_index], scores[old_index][new_index - 1]
+                        scores[old_index - 1][new_index],
+                        scores[old_index][new_index - 1],
                     )
         matches = []
         old_index, new_index = rows, columns
@@ -46,31 +49,36 @@ class DiffEngine:
             return self._whole_file_diff(left_lines, right_lines)
         records = []
         for index, record in enumerate(
-            difflib.unified_diff(left_lines, right_lines, lineterm='\n')
+            difflib.unified_diff(left_lines, right_lines, lineterm="\n")
         ):
-            if record.endswith('\n'):
+            if record.endswith("\n"):
                 records.append(record[:-1])
             else:
                 records.append(record)
-                if index >= 2 and record[:1] in (' ', '+', '-'):
-                    records.append('\\ No newline at end of file')
+                if index >= 2 and record[:1] in (" ", "+", "-"):
+                    records.append("\\ No newline at end of file")
         return records
 
-    def _whole_file_diff(self, left_lines: List[str], right_lines: List[str]) -> List[str]:
+    def _whole_file_diff(
+        self, left_lines: List[str], right_lines: List[str]
+    ) -> List[str]:
         """Emit an exact patch with broad context when fine alignment is too costly."""
         old_start = 1 if left_lines else 0
         new_start = 1 if right_lines else 0
         records = [
-            '--- ', '+++ ',
-            '@@ -{},{} +{},{} @@'.format(old_start, len(left_lines), new_start, len(right_lines)),
+            "--- ",
+            "+++ ",
+            "@@ -{},{} +{},{} @@".format(
+                old_start, len(left_lines), new_start, len(right_lines)
+            ),
         ]
-        for prefix, lines in (('-', left_lines), ('+', right_lines)):
+        for prefix, lines in (("-", left_lines), ("+", right_lines)):
             for line in lines:
-                if line.endswith('\n'):
+                if line.endswith("\n"):
                     records.append(prefix + line[:-1])
                 else:
                     records.append(prefix + line)
-                    records.append('\\ No newline at end of file')
+                    records.append("\\ No newline at end of file")
         return records
 
 
@@ -91,12 +99,15 @@ def parse_to_tree(content: str, file_path: Optional[str] = None) -> ListNode:
     return parser_parse_to_tree(content, file_path)
 
 
-def compute_diff(left_content: str, right_content: str,
-                 left_file_path: Optional[str] = None,
-                 right_file_path: Optional[str] = None) -> List[str]:
+def compute_diff(
+    left_content: str,
+    right_content: str,
+    left_file_path: Optional[str] = None,
+    right_file_path: Optional[str] = None,
+) -> List[str]:
     """Return exact unified records; structural annotations are separate."""
-    validate_text(left_content, 'Left input')
-    validate_text(right_content, 'Right input')
+    validate_text(left_content, "Left input")
+    validate_text(right_content, "Right input")
     if left_content == right_content:
         return []
     return DiffEngine().fallback_diff(

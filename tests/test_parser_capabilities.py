@@ -38,7 +38,9 @@ class ParserCapabilityTests(unittest.TestCase):
         elif expected == "python":
             self.assertEqual(parser.get_supported_languages(), ["python"])
         elif expected == "full":
-            self.assertEqual(set(parser.get_supported_languages()), set(LANGUAGE_CONFIGS))
+            self.assertEqual(
+                set(parser.get_supported_languages()), set(LANGUAGE_CONFIGS)
+            )
         elif expected is not None:
             self.fail("Unknown LINEDIFF_EXPECT_PARSERS value: " + expected)
 
@@ -56,13 +58,17 @@ class ParserCapabilityTests(unittest.TestCase):
                 tree = parser.parse_raw(SAMPLES[language], language=language)
                 self.assertIsNotNone(tree)
                 self.assertFalse(tree.root_node.has_error)
-                self.assertIsInstance(parser.parse_content(SAMPLES[language], language=language), ListNode)
+                self.assertIsInstance(
+                    parser.parse_content(SAMPLES[language], language=language), ListNode
+                )
 
     def test_python_utf8_byte_offsets_and_backend(self):
         parser = TreeSitterParser()
         source = SAMPLES["python"]
         if not parser.is_language_supported("python"):
-            self.assertEqual(analyze_python_changes(source, source).parser_backend, "python-ast")
+            self.assertEqual(
+                analyze_python_changes(source, source).parser_backend, "python-ast"
+            )
             self.assertEqual(len(diff_parse_to_tree(source, "sample.py").children), 2)
             return
 
@@ -72,7 +78,9 @@ class ParserCapabilityTests(unittest.TestCase):
         self.assertIn("café", [leaf.value for leaf in leaves])
         for leaf in leaves:
             value = leaf.value.encode("utf-8")
-            self.assertEqual(source_bytes[leaf.position:leaf.position + len(value)], value)
+            self.assertEqual(
+                source_bytes[leaf.position : leaf.position + len(value)], value
+            )
         result = analyze_python_changes(source, source.replace("🌍", "🌙"))
         self.assertEqual(result.parser_backend, "tree-sitter + python-ast")
         self.assertEqual(result.changes[0].definition, "café")
@@ -83,13 +91,16 @@ class ParserCapabilityTests(unittest.TestCase):
         invalid = "def broken(:\n    pass\n"
         fallback = parser.parse_content(invalid, language="python")
         self.assertIsInstance(fallback, ListNode)
-        self.assertEqual([node.value for node in fallback.children], invalid.splitlines())
+        self.assertEqual(
+            [node.value for node in fallback.children], invalid.splitlines()
+        )
 
     def test_line_fallback_positions_are_utf8_byte_offsets(self):
         fallback = TreeSitterParser()._fallback_parse("é\r\nx\n")
-        self.assertEqual([(node.value, node.position) for node in fallback.children], [
-            ("é", 0), ("x", 4)
-        ])
+        self.assertEqual(
+            [(node.value, node.position) for node in fallback.children],
+            [("é", 0), ("x", 4)],
+        )
 
 
 if __name__ == "__main__":

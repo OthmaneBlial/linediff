@@ -2,25 +2,28 @@ import subprocess
 import sys
 import tempfile
 import os
-import pytest
 
 # Path to the linediff module
-DIFF_BINARY = [sys.executable, '-m', 'linediff']
+DIFF_BINARY = [sys.executable, "-m", "linediff"]
+
 
 def run_difft(file1, file2, *args):
     """Run linediff on two files and return the output."""
     cmd = DIFF_BINARY + list(args) + [file1, file2]
     env = os.environ.copy()
-    env['COVERAGE_PROCESS_START'] = os.path.join(os.path.dirname(__file__), '..', 'pyproject.toml')
+    env["COVERAGE_PROCESS_START"] = os.path.join(
+        os.path.dirname(__file__), "..", "pyproject.toml"
+    )
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     return result.returncode, result.stdout, result.stderr
 
+
 def test_structural_diffing_basic():
     """Test basic structural diffing."""
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f1:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f1:
         f1.write("line 1\nline 2\nline 3\n")
         f1_path = f1.name
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f2:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f2:
         f2.write("line 1\nline 2 modified\nline 3\n")
         f2_path = f2.name
 
@@ -33,12 +36,13 @@ def test_structural_diffing_basic():
         os.unlink(f1_path)
         os.unlink(f2_path)
 
+
 def test_lcs_algorithm():
     """Test LCS algorithm with common subsequences."""
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f1:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f1:
         f1.write("a\nb\nc\nd\n")
         f1_path = f1.name
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f2:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f2:
         f2.write("a\nx\nb\nc\ny\nd\n")
         f2_path = f2.name
 
@@ -51,13 +55,14 @@ def test_lcs_algorithm():
         os.unlink(f1_path)
         os.unlink(f2_path)
 
+
 def test_alignment_slider_correction():
     """Test alignment and slider correction."""
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.rs', delete=False) as f1:
-        f1.write("fn main() {\n    println!(\"hello\");\n}\n")
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".rs", delete=False) as f1:
+        f1.write('fn main() {\n    println!("hello");\n}\n')
         f1_path = f1.name
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.rs', delete=False) as f2:
-        f2.write("fn main() {\n    println!(\"world\");\n}\n")
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".rs", delete=False) as f2:
+        f2.write('fn main() {\n    println!("world");\n}\n')
         f2_path = f2.name
 
     try:
@@ -69,13 +74,14 @@ def test_alignment_slider_correction():
         os.unlink(f1_path)
         os.unlink(f2_path)
 
+
 def test_no_changes():
     """Test when files are identical."""
     content = "identical content\n"
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f1:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f1:
         f1.write(content)
         f1_path = f1.name
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f2:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f2:
         f2.write(content)
         f2_path = f2.name
 

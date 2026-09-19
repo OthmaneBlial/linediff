@@ -49,7 +49,11 @@ def worker(case_id):
     if resource is not None:
         raw = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         rss_mib = raw / (1024 * 1024) if sys.platform == "darwin" else raw / 1024
-    print(json.dumps({"engine_ms": engine_ms, "peak_rss_mib": rss_mib, "lines": len(diff)}))
+    print(
+        json.dumps(
+            {"engine_ms": engine_ms, "peak_rss_mib": rss_mib, "lines": len(diff)}
+        )
+    )
 
 
 def main():
@@ -88,7 +92,14 @@ def main():
 
             started = time.perf_counter_ns()
             cli = subprocess.run(
-                [sys.executable, "-m", "linediff", "--check-only", case["left"], case["right"]],
+                [
+                    sys.executable,
+                    "-m",
+                    "linediff",
+                    "--check-only",
+                    case["left"],
+                    case["right"],
+                ],
                 cwd=ROOT,
                 env=env,
                 stdout=subprocess.DEVNULL,
@@ -97,7 +108,11 @@ def main():
             )
             cli_times.append((time.perf_counter_ns() - started) / 1_000_000)
             if cli.returncode not in (0, 1):
-                raise RuntimeError("CLI failed for {}: {}".format(case_id, cli.stderr.decode(errors="replace")))
+                raise RuntimeError(
+                    "CLI failed for {}: {}".format(
+                        case_id, cli.stderr.decode(errors="replace")
+                    )
+                )
 
         results.append(
             {
@@ -111,7 +126,11 @@ def main():
         )
 
     revision = subprocess.run(
-        ["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=False
+        ["git", "rev-parse", "--short", "HEAD"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
     ).stdout.strip()
     print(
         json.dumps(

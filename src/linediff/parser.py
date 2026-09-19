@@ -25,36 +25,64 @@ class LanguageConfig:
 
 LANGUAGE_CONFIGS: Dict[str, LanguageConfig] = {
     "python": LanguageConfig(
-        "python", "tree_sitter_python", (".py", ".pyw", ".pyi"),
+        "python",
+        "tree_sitter_python",
+        (".py", ".pyw", ".pyi"),
         ("string", "integer", "float", "identifier", "comment"),
     ),
     "javascript": LanguageConfig(
-        "javascript", "tree_sitter_javascript", (".js", ".jsx", ".mjs", ".cjs"),
+        "javascript",
+        "tree_sitter_javascript",
+        (".js", ".jsx", ".mjs", ".cjs"),
         ("string", "number", "identifier", "comment"),
     ),
     "json": LanguageConfig(
-        "json", "tree_sitter_json", (".json",),
+        "json",
+        "tree_sitter_json",
+        (".json",),
         ("string", "number", "true", "false", "null"),
     ),
     "html": LanguageConfig(
-        "html", "tree_sitter_html", (".html", ".htm"),
+        "html",
+        "tree_sitter_html",
+        (".html", ".htm"),
         ("text", "comment", "attribute_value"),
     ),
     "css": LanguageConfig(
-        "css", "tree_sitter_css", (".css",),
+        "css",
+        "tree_sitter_css",
+        (".css",),
         ("string_value", "integer_value", "identifier", "comment"),
     ),
     "rust": LanguageConfig(
-        "rust", "tree_sitter_rust", (".rs",),
-        ("string_literal", "integer_literal", "identifier", "line_comment", "block_comment"),
+        "rust",
+        "tree_sitter_rust",
+        (".rs",),
+        (
+            "string_literal",
+            "integer_literal",
+            "identifier",
+            "line_comment",
+            "block_comment",
+        ),
     ),
     "go": LanguageConfig(
-        "go", "tree_sitter_go", (".go",),
+        "go",
+        "tree_sitter_go",
+        (".go",),
         ("interpreted_string_literal", "int_literal", "identifier", "comment"),
     ),
     "java": LanguageConfig(
-        "java", "tree_sitter_java", (".java",),
-        ("string_literal", "decimal_integer_literal", "identifier", "line_comment", "block_comment"),
+        "java",
+        "tree_sitter_java",
+        (".java",),
+        (
+            "string_literal",
+            "decimal_integer_literal",
+            "identifier",
+            "line_comment",
+            "block_comment",
+        ),
     ),
 }
 
@@ -96,9 +124,13 @@ class TreeSitterParser:
                 return language
         return None
 
-    def parse_raw(self, content: str, language: Optional[str] = None,
-                  file_path: Optional[str] = None) -> Optional[Any]:
-        if len(content.encode('utf-8')) > MAX_INPUT_BYTES:
+    def parse_raw(
+        self,
+        content: str,
+        language: Optional[str] = None,
+        file_path: Optional[str] = None,
+    ) -> Optional[Any]:
+        if len(content.encode("utf-8")) > MAX_INPUT_BYTES:
             return None
         selected = language or self.detect_language(file_path)
         if not selected:
@@ -111,49 +143,65 @@ class TreeSitterParser:
         except (UnicodeEncodeError, ValueError, RuntimeError):
             return None
 
-    def parse_content(self, content: str, language: Optional[str] = None,
-                      file_path: Optional[str] = None) -> ListNode:
+    def parse_content(
+        self,
+        content: str,
+        language: Optional[str] = None,
+        file_path: Optional[str] = None,
+    ) -> ListNode:
         """Return a syntax tree or an explicit line-based fallback tree."""
-        if len(content.encode('utf-8')) > MAX_INPUT_BYTES:
-            raise ValueError('Parser input exceeds the 4 MiB limit')
+        if len(content.encode("utf-8")) > MAX_INPUT_BYTES:
+            raise ValueError("Parser input exceeds the 4 MiB limit")
         tree = self.parse_raw(content, language=language, file_path=file_path)
         if tree is None or tree.root_node.has_error:
             return self._fallback_parse(content)
         source_bytes = content.encode("utf-8")
         try:
-            root = self._ast_to_syntax_tree(tree.root_node, source_bytes, LANGUAGE_CONFIGS[language or self.detect_language(file_path)])
+            root = self._ast_to_syntax_tree(
+                tree.root_node,
+                source_bytes,
+                LANGUAGE_CONFIGS[language or self.detect_language(file_path)],
+            )
         except RecursionError:
             return self._fallback_parse(content)
         if isinstance(root, Atom):
             return ListNode([root], 0)
         return root
 
-    def _ast_to_syntax_tree(self, node: Any, source_bytes: bytes,
-                            config: LanguageConfig) -> Union[ListNode, Atom]:
+    def _ast_to_syntax_tree(
+        self, node: Any, source_bytes: bytes, config: LanguageConfig
+    ) -> Union[ListNode, Atom]:
         """Use byte offsets from Tree-sitter against UTF-8 bytes, not Python characters."""
         if node.type in config.atom_types or not node.children:
-            value = source_bytes[node.start_byte:node.end_byte].decode("utf-8")
+            value = source_bytes[node.start_byte : node.end_byte].decode("utf-8")
             return Atom(value, node.start_byte)
-        children = [self._ast_to_syntax_tree(child, source_bytes, config) for child in node.children]
+        children = [
+            self._ast_to_syntax_tree(child, source_bytes, config)
+            for child in node.children
+        ]
         return ListNode(children, node.start_byte)
 
     def _fallback_parse(self, content: str) -> ListNode:
         atoms = []
         offset = 0
         for line in content.splitlines(keepends=True):
-            if line.endswith('\r\n'):
+            if line.endswith("\r\n"):
                 value = line[:-2]
-            elif line.endswith(('\n', '\r')):
+            elif line.endswith(("\n", "\r")):
                 value = line[:-1]
             else:
                 value = line
             atoms.append(Atom(value, offset))
-            offset += len(line.encode('utf-8'))
+            offset += len(line.encode("utf-8"))
         return ListNode(atoms, 0)
 
     def get_supported_languages(self) -> List[str]:
         """Return languages with usable installed grammars, not all registry entries."""
-        return [language for language in LANGUAGE_CONFIGS if self.is_language_supported(language)]
+        return [
+            language
+            for language in LANGUAGE_CONFIGS
+            if self.is_language_supported(language)
+        ]
 
     def is_language_supported(self, language: str) -> bool:
         return self._get_parser(language) is not None

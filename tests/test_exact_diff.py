@@ -9,12 +9,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from linediff.__main__ import format_unified_diff
+from linediff.render import format_unified_diff
 from linediff.diff import compute_diff
 
 
 ROOT = Path(__file__).resolve().parent.parent
-CASES = json.loads((ROOT / "tests" / "fixtures" / "cases.json").read_text(encoding="utf-8"))["cases"]
+CASES = json.loads(
+    (ROOT / "tests" / "fixtures" / "cases.json").read_text(encoding="utf-8")
+)["cases"]
 
 
 class ExactDiffTests(unittest.TestCase):
@@ -32,7 +34,14 @@ class ExactDiffTests(unittest.TestCase):
                 env = os.environ.copy()
                 env["PYTHONDONTWRITEBYTECODE"] = "1"
                 result = subprocess.run(
-                    [sys.executable, "-m", "linediff", "--check-only", case["left"], case["right"]],
+                    [
+                        sys.executable,
+                        "-m",
+                        "linediff",
+                        "--check-only",
+                        case["left"],
+                        case["right"],
+                    ],
                     cwd=ROOT,
                     env=env,
                     capture_output=True,
@@ -48,7 +57,9 @@ class ExactDiffTests(unittest.TestCase):
             with self.subTest(case=case["id"]):
                 old_bytes = (ROOT / case["left"]).read_bytes()
                 new_bytes = (ROOT / case["right"]).read_bytes()
-                records = compute_diff(old_bytes.decode("utf-8"), new_bytes.decode("utf-8"))
+                records = compute_diff(
+                    old_bytes.decode("utf-8"), new_bytes.decode("utf-8")
+                )
                 if old_bytes == new_bytes:
                     self.assertEqual(records, [])
                     continue
@@ -68,7 +79,9 @@ class ExactDiffTests(unittest.TestCase):
                         input=patch.encode("utf-8"),
                         capture_output=True,
                     )
-                    self.assertEqual(applied.returncode, 0, applied.stderr.decode(errors="replace"))
+                    self.assertEqual(
+                        applied.returncode, 0, applied.stderr.decode(errors="replace")
+                    )
                     self.assertEqual(source.read_bytes(), new_bytes)
 
 
