@@ -25,6 +25,23 @@ def run_cli(*arguments, input_bytes=None, cwd=ROOT):
 
 
 class CliContractTests(unittest.TestCase):
+    def test_diagnostics_identify_route_only_on_stderr(self):
+        old = "tests/fixtures/replace.old.txt"
+        new = "tests/fixtures/replace.new.txt"
+        plain = run_cli(old, new)
+        diagnosed = run_cli("--diagnostics", old, new)
+        self.assertEqual(diagnosed.stdout, plain.stdout)
+        self.assertEqual(diagnosed.returncode, 0)
+        self.assertIn(b"route=exact-text; language=text", diagnosed.stderr)
+        fallback = run_cli("--diagnostics", "--display", "structural", old, new)
+        self.assertIn(b"route=text-fallback", fallback.stderr)
+        self.assertIn(b"no verified structural view", fallback.stderr)
+        python = run_cli("--diagnostics", "--display", "structural",
+                         "tests/fixtures/moved_function.old.py", "tests/fixtures/moved_function.new.py")
+        self.assertEqual(python.returncode, 0, python.stderr.decode(errors="replace"))
+        self.assertIn(b"route=structural; parser=", python.stderr)
+        self.assertNotIn(b"Diagnostic:", python.stdout)
+
     def test_check_only_distinguishes_same_change_and_error(self):
         old = "tests/fixtures/final_newline.old.txt"
         new = "tests/fixtures/final_newline.new.txt"

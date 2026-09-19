@@ -6,7 +6,7 @@ The tagged 0.1.3 package predates the changes below. Python imports are availabl
 
 ```python
 from linediff.diff import compute_diff
-from linediff.__main__ import format_unified_diff
+from linediff.render import format_unified_diff
 
 records = compute_diff("before\n", "after\n")
 patch = format_unified_diff(records, "old.txt", "new.txt") + "\n"
@@ -50,3 +50,5 @@ tree = parser.parse_raw("def f(): pass\n", language="python")
 ## CLI contract
 
 `python -m linediff` and the installed `linediff` entry point share the same CLI. It accepts two file paths, a Linediff-specific stdin pair separated by a line containing only `---`, or Git external-diff's seven or nine arguments. In `--check-only` mode the exit codes are `0` same, `1` different, `2` error. Successful display exits `0`; errors go to stderr. `--display structural` is human-readable, while the default unified view is intended to be patchable for text files.
+
+`--diagnostics` writes the actual comparison route to stderr: `exact-text`, `structural` with the parser backend, `text-fallback` with a reason, or `binary-git-status`. It does not change stdout. File input and extension detection live in `linediff.inputs` and `linediff.languages`; the formatting functions live in `linediff.render`.
