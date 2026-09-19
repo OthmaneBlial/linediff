@@ -39,7 +39,7 @@ def detect_language(file_path: str) -> str:
 def read_file_content(file_path: str) -> str:
     """Read content from file."""
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, 'r', encoding='utf-8', newline='') as f:
             return f.read()
     except FileNotFoundError:
         print(f"Error: File '{file_path}' not found.", file=sys.stderr)

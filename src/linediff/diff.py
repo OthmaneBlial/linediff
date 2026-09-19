@@ -196,8 +196,22 @@ class DiffEngine:
         return aligned
 
     def fallback_diff(self, left_lines: List[str], right_lines: List[str]) -> List[str]:
-        """Line/word-level diff fallback using difflib."""
-        return list(difflib.unified_diff(left_lines, right_lines, lineterm=''))
+        """Return unified records, preserving CRLF and missing-final-LF markers.
+
+        Inputs must retain their original line endings (``splitlines(True)``).
+        The renderer owns the final newline between output records.
+        """
+        records = []
+        for index, record in enumerate(
+            difflib.unified_diff(left_lines, right_lines, lineterm='\n')
+        ):
+            if record.endswith('\n'):
+                records.append(record[:-1])
+            else:
+                records.append(record)
+                if index >= 2 and record[:1] in (' ', '+', '-'):
+                    records.append('\\ No newline at end of file')
+        return records
 
 # Import the new tree-sitter parser
 try:
@@ -228,47 +242,10 @@ def parse_to_tree(content: str, file_path: Optional[str] = None) -> ListNode:
     return ListNode(atoms, 0)
 
 def compute_diff(left_content: str, right_content: str, left_file_path: Optional[str] = None, right_file_path: Optional[str] = None) -> List[str]:
-    """Main entry point for computing diffs."""
-    engine = DiffEngine()
-    left_tree = parse_to_tree(left_content, left_file_path)
-    right_tree = parse_to_tree(right_content, right_file_path)
-
-    left_count = count_nodes(left_tree)
-    right_count = count_nodes(right_tree)
-
-    # For large trees, skip structural diff and use linear fallback
-    if left_count > 1000 or right_count > 1000:
-        left_lines = left_content.splitlines()
-        right_lines = right_content.splitlines()
-        return engine.fallback_diff(left_lines, right_lines)
-
-    # Try structural diff first
-    try:
-        engine.build_graph(left_tree, right_tree)
-        path = engine.dijkstra_shortest_path(engine.start_vertex, engine.end_vertex)
-
-        if path:  # If structural diff found a path
-            # Convert path to diff output (simplified)
-            diff_lines = []
-            for edge in path:
-                if edge.operation == 'match':
-                    diff_lines.append(f" {edge.from_vertex.node.value}")  # type: ignore
-                elif edge.operation == 'change':
-                    diff_lines.append(f"-{edge.from_vertex.node.value}")  # type: ignore
-                    diff_lines.append(f"+{edge.to_vertex.node.value}")  # type: ignore
-                elif edge.operation == 'delete':
-                    diff_lines.append(f"-{edge.from_vertex.node.value}")  # type: ignore
-                elif edge.operation == 'insert':
-                    diff_lines.append(f"+{edge.to_vertex.node.value}")  # type: ignore
-            return diff_lines
-        else:
-            # Fallback to line-level diff
-            left_lines = left_content.splitlines()
-            right_lines = right_content.splitlines()
-            return engine.fallback_diff(left_lines, right_lines)
-    except Exception as e:
-        # If structural diff fails, fallback to line-level diff
-        print(f"Warning: Structural diffing failed ({e}), falling back to line-level diff.")
-        left_lines = left_content.splitlines()
-        right_lines = right_content.splitlines()
-        return engine.fallback_diff(left_lines, right_lines)
+    """Compute an exact text diff; structural rendering is added separately."""
+    if left_content == right_content:
+        return []
+    return DiffEngine().fallback_diff(
+        left_content.splitlines(keepends=True),
+        right_content.splitlines(keepends=True),
+    )

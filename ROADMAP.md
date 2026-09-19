@@ -61,6 +61,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 1.1 Réparer la comparaison fidèle des textes
 
+- [ ] **Implémenté et validé sur macOS arm64; validation Linux/Windows en attente.** Les 14 fixtures texte distinguent maintenant fins de ligne et saut final; `git apply` reconstruit exactement les fichiers de sortie. La suite locale actuelle passe. Ne cocher qu'après la matrice de la phase 4.
+
 - **Objectif :** ne jamais déclarer identiques deux fichiers dont le contenu diffère.
 - **Changements :** remplacer l'usage de `splitlines()` qui efface l'information de fin de ligne, représenter correctement `\n`, `\r\n` et l'absence de saut final; définir le comportement des fichiers vides, lignes répétées et contenus Unicode; produire des hunks et en-têtes de diff unifié corrects sans les dupliquer.
 - **Fichiers :** `src/linediff/diff.py`, `src/linediff/__main__.py`, `tests/test_unit_diff.py`, nouvelles fixtures de phase 0.

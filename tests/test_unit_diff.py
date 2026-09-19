@@ -77,8 +77,8 @@ def test_align_sequences():
 def test_fallback_diff():
     """Test fallback diff."""
     engine = DiffEngine()
-    left = ["line1", "line2"]
-    right = ["line1", "modified"]
+    left = ["line1\n", "line2\n"]
+    right = ["line1\n", "modified\n"]
     diff = engine.fallback_diff(left, right)
     assert len(diff) > 0
     assert "@@" in diff[0] or "---" in diff[0]
