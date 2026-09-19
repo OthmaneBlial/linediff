@@ -1,0 +1,11 @@
+--- tests/fixtures/large.old.py
++++ tests/fixtures/large.new.py
+@@ -998,7 +998,7 @@
+ line_0997 = 997
+ line_0998 = 998
+ line_0999 = 999
+-line_1000 = 1000
++line_1000 = -1
+ line_1001 = 1001
+ line_1002 = 1002
+ line_1003 = 1003

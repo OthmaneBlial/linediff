@@ -1,0 +1,8 @@
+--- tests/fixtures/repeated_lines.old.txt
++++ tests/fixtures/repeated_lines.new.txt
+@@ -1,4 +1,4 @@
+ same
+-same
++changed
+ same
+ end

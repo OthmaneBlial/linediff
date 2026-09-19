@@ -1,0 +1,6 @@
+--- tests/fixtures/format_only.old.py
++++ tests/fixtures/format_only.new.py
+@@ -1,2 +1,2 @@
+ def run():
+-    return (1 + 2)
++    return 1+2

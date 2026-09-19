@@ -1,0 +1,6 @@
+--- tests/fixtures/unicode.old.py
++++ tests/fixtures/unicode.new.py
+@@ -1,2 +1,2 @@
+ def café():
+-    return "🌍"
++    return "🌙"

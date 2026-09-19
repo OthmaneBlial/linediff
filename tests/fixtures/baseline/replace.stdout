@@ -1,0 +1,6 @@
+--- tests/fixtures/replace.old.txt
++++ tests/fixtures/replace.new.txt
+@@ -1,2 +1,2 @@
+ alpha
+-beta
++gamma

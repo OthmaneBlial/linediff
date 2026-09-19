@@ -1,0 +1,11 @@
+--- tests/fixtures/moved_function.old.py
++++ tests/fixtures/moved_function.new.py
+@@ -1,5 +1,5 @@
++def keep():
++    pass
++
+ def calculate_total(x):
+     return x
+-
+-def keep():
+-    pass

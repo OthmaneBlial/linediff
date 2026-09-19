@@ -1,0 +1,2 @@
+--- tests/fixtures/crlf.old.txt
++++ tests/fixtures/crlf.new.txt

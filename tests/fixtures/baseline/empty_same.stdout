@@ -1,0 +1,2 @@
+--- tests/fixtures/empty_same.old.txt
++++ tests/fixtures/empty_same.new.txt

@@ -1,0 +1,4 @@
+--- tests/fixtures/empty_to_text.old.txt
++++ tests/fixtures/empty_to_text.new.txt
+@@ -0,0 +1 @@
++hello

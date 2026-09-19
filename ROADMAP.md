@@ -48,6 +48,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 0.2 Constituer le corpus de référence et une mesure initiale
 
+- [x] **Terminé localement (19 septembre 2026).** Quinze paires et leurs tailles/règles/sorties baseline figurent dans `tests/fixtures/`; `scripts/benchmark.py` imprime des mesures reproductibles sans modifier le dépôt; résultats et limites dans `docs/BASELINE.md`. Les erreurs de saut de ligne final et CRLF sont conservées comme preuves de départ.
+
 - **Objectif :** disposer d'exemples vérifiables avant de changer l'algorithme.
 - **Changements :** figer des paires de fichiers et des résultats attendus pour ajout, suppression, modification, déplacement de fonction, changement de paramètre, reformatage, répétitions, Unicode, absence de saut de ligne final, fichier vide, fichier binaire et gros fichier; séparer exemples d'acceptation et benchmarks.
 - **Fichiers :** `data/`, nouveaux `tests/fixtures/` et `benchmarks/` ou `scripts/benchmark.py`, `docs/PRODUCT.md`.

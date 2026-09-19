@@ -1,0 +1,2 @@
+--- tests/fixtures/final_newline.old.txt
++++ tests/fixtures/final_newline.new.txt
