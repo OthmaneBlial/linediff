@@ -100,7 +100,9 @@ def read_file_content(file_path: str) -> str:
 
 def read_git_bytes(file_path: str) -> bytes:
     """Read a Git external-diff operand, including its null-file sentinel."""
-    if file_path == "/dev/null":
+    if file_path == "/dev/null" or (
+        os.name == "nt" and file_path.replace("\\", "/").lower() in {"nul", "./nul"}
+    ):
         return b""
     return _read_regular_bytes(file_path, "Git operand")
 

@@ -46,15 +46,16 @@ class GitIntegrationTests(unittest.TestCase):
         self.git("add", "-A")
 
     def git(self, *arguments, env=None):
-        return subprocess.run(
+        result = subprocess.run(
             ["git"] + list(arguments),
             cwd=self.repository,
             env=env,
             capture_output=True,
             text=True,
             encoding="utf-8",
-            check=True,
         )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return result
 
     def test_one_shot_external_diff_handles_common_git_changes(self):
         env = os.environ.copy()
@@ -108,6 +109,28 @@ class GitIntegrationTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.strip(), "Binary files differ: sample.dat")
+
+    @unittest.skipUnless(os.name == "nt", "Git for Windows null operand")
+    def test_windows_nul_is_an_empty_git_operand(self):
+        new = self.repository / "added.py"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "linediff",
+                "added.py",
+                "NUL",
+                "oldhex",
+                ".",
+                str(new),
+                "newhex",
+                "100644",
+            ],
+            cwd=self.repository,
+            capture_output=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(b"--- /dev/null", result.stdout)
 
     def test_identical_git_objects_are_rename_even_with_checkout_line_endings(self):
         old = self.repository / "old-view.py"
