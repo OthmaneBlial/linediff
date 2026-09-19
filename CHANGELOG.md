@@ -3,10 +3,7 @@ All notable changes to this project will be documented here.
 
 ## Unreleased (`main`, not published)
 
-- Download and smoke-test the built wheel and source archive on Linux, macOS and Windows at the Python 3.8 and 3.14 support boundaries.
-- Add a dated, reproducible development comparison with Git, Difftastic and delta, including raw outputs and measured limitations.
-- Remove an obsolete PyPI-token environment template from the former release process.
-- Gate candidate standalone builds on cross-platform smoke tests of the wheel and source archive; prepare consented user-trial protocol and draft candidate release notes.
+No changes since the current candidate source snapshot.
 
 ## [0.2.0a1] - 2026-09-19
 
@@ -26,6 +23,10 @@ Candidate source only. No tag, GitHub Release, PyPI upload, or public standalone
 - Add a real Git external-diff capture and reproducible terminal output tests, including LF fixtures for Windows.
 - Add four isolated mutation probes and subprocess-aware branch coverage evidence for critical paths.
 - Align package metadata with the tested Python matrix and document the Python 3.8 license-metadata tradeoff.
+- Download and smoke-test the built wheel and source archive on Linux, macOS and Windows at the Python 3.8 and 3.14 support boundaries.
+- Add a dated, reproducible development comparison with Git, Difftastic and delta, including raw outputs and measured limitations.
+- Remove an obsolete PyPI-token environment template from the former release process.
+- Gate candidate standalone builds on cross-platform smoke tests of the wheel and source archive; prepare consented user-trial protocol and draft candidate release notes.
 
 ## [0.1.3] - 2025-11-15
 
