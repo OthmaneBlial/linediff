@@ -100,6 +100,8 @@ git -c diff.external=linediff diff --cached --ext-diff
 
 The setting applies only to that command. Use `git diff --no-ext-diff` to see Git's normal output. Linediff prints readable text hunks for changed, added, deleted and renamed files, and a status line for binary changes. Git may split renames into separate deletion and addition entries with other external-diff configurations. This output is for review, not a replacement for the full Git patch format.
 
+When Git supplies the same object ID on both sides of a rename, Linediff reports the rename even if checkout line endings make the temporary operand bytes differ. Changed Git operands are still compared byte-for-byte as supplied; a repository's line-ending filters may make this view differ from Git's normalized patch.
+
 ## CI/CD Integration
 
 ### Check-Only Mode

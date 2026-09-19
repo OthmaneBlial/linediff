@@ -79,7 +79,9 @@ def main() -> int:
     try:
         if git_mode:
             # Git adds new-path and metadata for renames/copies (nine arguments).
-            git_path, old_file, _, old_mode, new_file, _, new_mode = args.files[:7]
+            git_path, old_file, old_sha, old_mode, new_file, new_sha, new_mode = (
+                args.files[:7]
+            )
             new_path = git_path
             if len(args.files) == 9:
                 new_path = args.files[7]
@@ -89,6 +91,25 @@ def main() -> int:
             old_bytes = read_git_bytes(old_file)
             new_bytes = read_git_bytes(new_file)
             modes_differ = old_mode != new_mode
+            if (
+                names_differ
+                and old_sha == new_sha
+                and len(old_sha) in (40, 64)
+                and all(char in "0123456789abcdef" for char in old_sha.lower())
+            ):
+                if args.diagnostics:
+                    print("Diagnostic: route=git-identical-object", file=sys.stderr)
+                if args.check_only:
+                    return 1
+                suffix = (
+                    " (mode {} -> {})".format(old_mode, new_mode)
+                    if modes_differ
+                    else ""
+                )
+                print(
+                    "Renamed: {} -> {}{}".format(git_path, new_path, suffix), flush=True
+                )
+                return 0
             try:
                 content1 = old_bytes.decode("utf-8")
                 content2 = new_bytes.decode("utf-8")

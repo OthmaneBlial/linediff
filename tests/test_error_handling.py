@@ -13,7 +13,9 @@ def run_difft(*args):
     env["COVERAGE_PROCESS_START"] = os.path.join(
         os.path.dirname(__file__), "..", "pyproject.toml"
     )
-    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
+    result = subprocess.run(
+        cmd, capture_output=True, text=True, encoding="utf-8", env=env
+    )
     return result.returncode, result.stdout, result.stderr
 
 

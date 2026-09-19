@@ -52,6 +52,7 @@ class GitIntegrationTests(unittest.TestCase):
             env=env,
             capture_output=True,
             text=True,
+            encoding="utf-8",
             check=True,
         )
 
@@ -103,9 +104,47 @@ class GitIntegrationTests(unittest.TestCase):
             env=env,
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.strip(), "Binary files differ: sample.dat")
+
+    def test_identical_git_objects_are_rename_even_with_checkout_line_endings(self):
+        old = self.repository / "old-view.py"
+        new = self.repository / "new-view.py"
+        old.write_bytes(b"same\n")
+        new.write_bytes(b"same\r\n")
+        sha = "a" * 40
+        arguments = [
+            sys.executable,
+            "-m",
+            "linediff",
+            "old-view.py",
+            str(old),
+            sha,
+            "100644",
+            str(new),
+            sha,
+            "100644",
+            "new-view.py",
+            sha,
+        ]
+        display = subprocess.run(
+            arguments,
+            cwd=self.repository,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(display.returncode, 0, display.stderr)
+        self.assertEqual(display.stdout.strip(), "Renamed: old-view.py -> new-view.py")
+        check = subprocess.run(
+            arguments[:3] + ["--check-only"] + arguments[3:],
+            cwd=self.repository,
+            capture_output=True,
+        )
+        self.assertEqual(check.returncode, 1)
+        self.assertEqual(check.stdout, b"")
 
 
 if __name__ == "__main__":

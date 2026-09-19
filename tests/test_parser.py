@@ -9,7 +9,9 @@ DIFF_BINARY = [sys.executable, "-m", "linediff"]
 def run_difft(file1, file2, *args):
     cmd = DIFF_BINARY + list(args) + [file1, file2]
     env = os.environ.copy()
-    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
+    result = subprocess.run(
+        cmd, capture_output=True, text=True, encoding="utf-8", env=env
+    )
     return result.returncode, result.stdout, result.stderr
 
 
