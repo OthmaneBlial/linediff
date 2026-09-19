@@ -85,6 +85,12 @@ class ParserCapabilityTests(unittest.TestCase):
         self.assertIsInstance(fallback, ListNode)
         self.assertEqual([node.value for node in fallback.children], invalid.splitlines())
 
+    def test_line_fallback_positions_are_utf8_byte_offsets(self):
+        fallback = TreeSitterParser()._fallback_parse("é\r\nx\n")
+        self.assertEqual([(node.value, node.position) for node in fallback.children], [
+            ("é", 0), ("x", 4)
+        ])
+
 
 if __name__ == "__main__":
     unittest.main()

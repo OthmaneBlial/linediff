@@ -118,6 +118,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 2.3 Clarifier l'API et les limites de l'algorithme
 
+- [ ] **En cours.** Graphe/Dijkstra inatteignables retirés; LCS conservé parce qu'il sert désormais à l'alignement des définitions; positions des atomes uniformisées en offsets UTF-8; référence API corrigée. La séparation lecture/rendu et un diagnostic CLI du chemin choisi restent à valider.
+
 - **Objectif :** rendre le cœur testable, maintenable et documentable.
 - **Changements :** séparer lecture, détection, parse, calcul et rendu; retirer le LCS et les structures non utilisés ou les intégrer avec tests; définir un modèle de changement avec provenance et plages; formaliser les conditions du fallback et ses raisons sans imprimer de warning sur stdout.
 - **Fichiers :** `src/linediff/`, `docs/api.md`, tests unitaires dédiés.

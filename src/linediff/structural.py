@@ -9,6 +9,8 @@ import ast
 from dataclasses import dataclass, replace
 from typing import Dict, List, Optional, Set, Tuple
 
+from .diff import DiffEngine
+
 
 FUNCTION_NODES = (ast.FunctionDef, ast.AsyncFunctionDef)
 
@@ -114,29 +116,7 @@ def _collect(tree: ast.Module) -> Tuple[Dict[str, Definition], List[str], bool]:
 
 def _ordered_anchors(before: List[str], after: List[str]) -> Set[str]:
     """Find definitions that retain relative order; non-anchors may be moves."""
-    rows = len(before) + 1
-    columns = len(after) + 1
-    scores = [[0] * columns for _ in range(rows)]
-    for old_index in range(len(before) - 1, -1, -1):
-        for new_index in range(len(after) - 1, -1, -1):
-            if before[old_index] == after[new_index]:
-                scores[old_index][new_index] = 1 + scores[old_index + 1][new_index + 1]
-            else:
-                scores[old_index][new_index] = max(
-                    scores[old_index + 1][new_index], scores[old_index][new_index + 1]
-                )
-    anchors: Set[str] = set()
-    old_index = new_index = 0
-    while old_index < len(before) and new_index < len(after):
-        if before[old_index] == after[new_index]:
-            anchors.add(before[old_index])
-            old_index += 1
-            new_index += 1
-        elif scores[old_index + 1][new_index] >= scores[old_index][new_index + 1]:
-            old_index += 1
-        else:
-            new_index += 1
-    return anchors
+    return {before[old_index] for old_index, _ in DiffEngine().lcs_linear(before, after)}
 
 
 def _tree_sitter_ranges(tree: object, source: str) -> Dict[str, Tuple[int, int]]:

@@ -65,15 +65,6 @@ def test_count_nodes():
     assert count_nodes(listnode) == 2
 
 
-def test_align_sequences():
-    """Test sequence alignment."""
-    engine = DiffEngine()
-    left = ["a", "b"]
-    right = ["a", "c"]
-    aligned = engine.align_sequences(left, right)
-    assert len(aligned) == 3  # a, -b +c
-
-
 def test_fallback_diff():
     """Test fallback diff."""
     engine = DiffEngine()

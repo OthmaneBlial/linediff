@@ -285,20 +285,11 @@ const config = {
 
 ## How It Works
 
-Linediff uses a two-phase approach:
-
-1. **Syntax Parsing**: Tree-sitter parsers convert source code into abstract syntax trees (ASTs)
-2. **Structural Diffing**: A graph-based algorithm finds optimal matches between AST nodes
-3. **Fallback**: For large files or unsupported languages, falls back to standard difflib
-
-The diff engine implements Dijkstra's algorithm on a graph where nodes represent code elements and edges represent possible matches, insertions, or deletions.
+The default output is an exact line diff. The separate `--display structural` view uses Python's AST to match functions, classes and direct class methods, and a longest common subsequence of definition names to flag moves. Optional Tree-sitter supplies source ranges when installed. The structural view always includes the exact text diff; unsupported languages and invalid Python use an explicit text fallback. See the [API description](docs/api.md) for its limits.
 
 ## Performance
 
-- **Small files**: Syntax-aware diffing provides more meaningful results
-- **Large files**: Automatically falls back to line-based diffing for performance
-- **Memory efficient**: Tree parsing is done on-demand with caching
-- **Fast startup**: Parser instances are cached for repeated operations
+The [local baseline](docs/BASELINE.md) records reproducible timing and memory measurements of the pre-fix line-diff engine. No speed or memory advantage over another tool has been verified. Performance limits for the structural view are tracked in the roadmap.
 
 ## 🛠️ Development
 

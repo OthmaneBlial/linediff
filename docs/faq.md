@@ -168,27 +168,18 @@ echo $?  # 0 = identical, 1 = different, 2 = error
 
 ### How does Linediff's algorithm work?
 
-Linediff uses a graph-based structural diffing algorithm:
-
-1. Parse both files into Abstract Syntax Trees (ASTs) using tree-sitter
-2. Build a diff graph representing possible changes
-3. Use Dijkstra's algorithm to find the optimal diff path
-4. Format the result according to the chosen display mode
+The default output is an exact line diff. On development `main`, `--display structural` also parses Python definitions with the standard-library AST, matches names and relative order, and reports changed or moved definitions above the exact text diff. Optional Tree-sitter supplies source ranges when available. Other languages use text fallback; see [parser support](PARSER_SUPPORT.md).
 
 ### What are the limitations?
 
-- Currently in alpha (v0.1.0)
-- Large files automatically fall back to line-based diffing
-- Requires tree-sitter parsers for syntax awareness
-- Text files only (no binary file support)
+- Tagged version 0.1.3 does not include the development structural view.
+- Only Python definitions have a tested structural explanation on development `main`.
+- Binary files have a status line in Git external-diff mode; direct binary file comparison is an error.
+- The structural view is for reading, not applying as a patch.
 
 ### What's planned for future versions?
 
-- Enhanced display modes with colors
-- Patch application capabilities
-- Three-way merge support
-- Additional language parsers
-- IDE integrations
+See the [roadmap](../ROADMAP.md) for planned work and its acceptance criteria. Planned items are not shipped features.
 
 ## Getting Help
 

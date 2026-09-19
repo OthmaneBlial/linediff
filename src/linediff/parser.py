@@ -130,7 +130,18 @@ class TreeSitterParser:
         return ListNode(children, node.start_byte)
 
     def _fallback_parse(self, content: str) -> ListNode:
-        return ListNode([Atom(line, index) for index, line in enumerate(content.splitlines())], 0)
+        atoms = []
+        offset = 0
+        for line in content.splitlines(keepends=True):
+            if line.endswith('\r\n'):
+                value = line[:-2]
+            elif line.endswith(('\n', '\r')):
+                value = line[:-1]
+            else:
+                value = line
+            atoms.append(Atom(value, offset))
+            offset += len(line.encode('utf-8'))
+        return ListNode(atoms, 0)
 
     def get_supported_languages(self) -> List[str]:
         """Return languages with usable installed grammars, not all registry entries."""

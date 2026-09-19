@@ -1,248 +1,52 @@
-# API Reference
+# Developer API (development `main`)
 
-This document provides technical details about Linediff's internal API for developers who want to integrate or extend the functionality.
+The tagged 0.1.3 package predates the changes below. Python imports are available today, but the library API has not yet been declared stable. The CLI is the primary product surface.
 
-## Core Functions
-
-### `linediff.diff.compute_diff`
-
-```python
-def compute_diff(left_content: str, right_content: str, left_file_path: Optional[str] = None, right_file_path: Optional[str] = None) -> List[str]:
-```
-
-Main entry point for computing diffs between two text contents.
-
-**Parameters:**
-- `left_content` (str): Content of the left/first file
-- `right_content` (str): Content of the right/second file
-- `left_file_path` (Optional[str]): Path to left file for language detection
-- `right_file_path` (Optional[str]): Path to right file for language detection
-
-**Returns:**
-- `List[str]`: List of diff lines in unified format
-
-**Example:**
-```python
-from linediff.diff import compute_diff
-
-diff_lines = compute_diff(
-    "def hello():\n    print('hello')",
-    "def hello():\n    print('world')",
-    "old.py",
-    "new.py"
-)
-print('\n'.join(diff_lines))
-```
-
-## Parser API
-
-### `linediff.parser.parse_to_tree`
-
-```python
-def parse_to_tree(content: str, file_path: Optional[str] = None) -> ListNode:
-```
-
-Parse content into a syntax tree using tree-sitter or fallback parsing.
-
-**Parameters:**
-- `content` (str): Source code content to parse
-- `file_path` (Optional[str]): File path for language detection
-
-**Returns:**
-- `ListNode`: Root node of the syntax tree
-
-### `linediff.parser.TreeSitterParser`
-
-Main parser class for syntax-aware parsing.
-
-#### Methods
-
-```python
-def detect_language(self, file_path: str) -> Optional[str]:
-```
-Detect programming language from file extension.
-
-```python
-def parse_content(self, content: str, language: Optional[str] = None, file_path: Optional[str] = None) -> ListNode:
-```
-Parse content with optional language override.
-
-```python
-def get_supported_languages(self) -> List[str]:
-```
-Get list of supported languages.
-
-```python
-def is_language_supported(self, language: str) -> bool:
-```
-Check if a language is supported.
-
-## Data Structures
-
-### `Atom`
-
-```python
-@dataclass
-class Atom:
-    value: str
-    position: int
-```
-
-Represents an atomic element in the syntax tree (leaf nodes).
-
-### `ListNode`
-
-```python
-@dataclass
-class ListNode:
-    children: List[Union['ListNode', Atom]]
-    position: int
-```
-
-Represents a list node in the syntax tree (internal nodes with children).
-
-## Diff Engine
-
-### `DiffEngine`
-
-Core diff computation engine.
-
-#### Methods
-
-```python
-def build_graph(self, left_tree: ListNode, right_tree: ListNode) -> None:
-```
-Build the diff graph from two syntax trees.
-
-```python
-def dijkstra_shortest_path(self, start: Vertex, end: Vertex) -> List[Edge]:
-```
-Find optimal diff path using Dijkstra's algorithm.
-
-```python
-def fallback_diff(self, left_lines: List[str], right_lines: List[str]) -> List[str]:
-```
-Fallback to line-based diffing using difflib.
-
-## CLI Interface
-
-### Main Entry Point
-
-```python
-def main():
-```
-
-Command-line interface entry point. Handles argument parsing and diff computation.
-
-**Supported arguments:**
-- `files`: File paths to compare (2 files or 7 for Git external diff)
-- `--check-only`: Exit code only mode
-- `--language`: Language override
-- `--display`: Display mode (unified, side-by-side, inline)
-
-## Language Support
-
-### Supported Languages
-
-Linediff supports the following languages through tree-sitter parsers:
-
-- `python`: Python files (.py, .pyw, .pyi)
-- `javascript`: JavaScript/TypeScript (.js, .jsx, .ts, .tsx, .mjs)
-- `json`: JSON files (.json, .jsonc)
-- `html`: HTML/XML (.html, .htm, .xml)
-- `css`: CSS/SCSS (.css, .scss, .sass, .less)
-- `rust`: Rust (.rs)
-- `go`: Go (.go)
-- `java`: Java (.java)
-
-### Adding New Languages
-
-To add support for a new language:
-
-1. Create a `LanguageConfig` in `parser.py`
-2. Define atom types, list types, and delimiter types
-3. Add tree-sitter parser dependency to `pyproject.toml`
-
-Example:
-```python
-'kotlin': LanguageConfig(
-    name='kotlin',
-    extensions=['.kt', '.kts'],
-    parser_class=tree_sitter_kotlin.language(),
-    atom_types={'string', 'integer', 'identifier'},
-    list_types={'source_file', 'function_declaration', 'class_declaration'},
-    delimiter_types={
-        'function_declaration': '\n\n',
-        'class_declaration': '\n\n'
-    }
-)
-```
-
-## Error Handling
-
-Linediff includes robust error handling:
-
-- **Parser failures**: Falls back to line-based diffing
-- **Encoding errors**: Graceful handling with warnings
-- **Large files**: Automatic fallback for performance (>1000 nodes)
-- **Missing dependencies**: Graceful degradation
-
-## Performance Considerations
-
-- **Tree size limits**: Files with >1000 AST nodes use line-based fallback
-- **Parser caching**: Tree-sitter parsers are cached for repeated use
-- **Memory optimization**: Minimal memory footprint for typical use cases
-
-## Integration Examples
-
-### Custom Diff Tool
+## Exact text diff
 
 ```python
 from linediff.diff import compute_diff
+from linediff.__main__ import format_unified_diff
 
-def custom_diff_tool(file1, file2):
-    with open(file1, 'r') as f1, open(file2, 'r') as f2:
-        diff = compute_diff(f1.read(), f2.read(), file1, file2)
-    return '\n'.join(diff)
+records = compute_diff("before\n", "after\n")
+patch = format_unified_diff(records, "old.txt", "new.txt") + "\n"
 ```
 
-### Syntax Tree Analysis
+`compute_diff(left_content, right_content, left_file_path=None, right_file_path=None)` accepts decoded text and returns a list of unified-diff records. The path arguments are reserved for compatibility and do not affect the exact text calculation. Equal strings return `[]`. Final-newline and CRLF changes are retained, including `\ No newline at end of file` records where needed. `format_unified_diff` adds the requested file headers. Use the default CLI output when you need a patch for actual files; structural annotations are never an applicable patch.
+
+`DiffEngine.lcs_linear(left, right)` supplies ordered symbol anchors for the structural view. `DiffEngine.fallback_diff(left_lines, right_lines)` expects input lines **with original line endings** (`splitlines(keepends=True)`). The old graph and shortest-path classes have been removed because they did not produce a reachable structural result.
+
+## Python structural analysis
 
 ```python
-from linediff.parser import parse_to_tree
-from linediff.diff import count_nodes
+from linediff.structural import analyze_python_changes
 
-tree = parse_to_tree(code_string, "file.py")
-node_count = count_nodes(tree)
-print(f"AST has {node_count} nodes")
+result = analyze_python_changes(
+    "def total(items):\n    return sum(items)\n",
+    "def total(items):\n    return sum(items) + 1\n",
+)
+for change in result.changes:
+    print(change.kind, change.definition, change.old_lines, change.new_lines)
 ```
 
-### Language Detection
+`StructuralResult` has `supported`, `changes`, `reason`, and `parser_backend`. A `StructuralChange` records `kind` (`added`, `removed`, `changed`, `moved`), a qualified definition name, old/new line ranges, and optional details such as `signature` or `body`. Line ranges are inclusive and one-based. Python `ast` matches definitions. Optional Tree-sitter provides source ranges when both inputs parse cleanly. Ambiguous repeated names or invalid Python return `supported=False` and a reason; callers should then show the exact text diff.
+
+The indexed units are top-level functions/classes and direct class methods. Changes outside them remain visible in the exact text diff. A structural summary is an aid to review, not a claim of semantic equivalence.
+
+## Optional parser API
 
 ```python
-from linediff.parser import get_parser
+from linediff.parser import TreeSitterParser
 
-parser = get_parser()
-lang = parser.detect_language("script.py")  # Returns 'python'
+parser = TreeSitterParser()
+print(parser.get_supported_languages())
+tree = parser.parse_raw("def f(): pass\n", language="python")
 ```
 
-## Constants and Configuration
+`get_supported_languages()` lists **installed and initialized** grammars. `detect_language(path)` recognizes only extensions covered by a registered grammar. `parse_raw(content, language=None, file_path=None)` returns a Tree-sitter tree or `None` if that grammar is unavailable. `parse_content(...)` returns a `ListNode`; absent grammars and parse errors produce a line-based fallback tree. `parse_to_tree(content, file_path=None)` uses a shared parser instance.
 
-- `TREE_SITTER_PARSER_AVAILABLE`: Boolean indicating if tree-sitter is available
-- `LANGUAGE_CONFIGS`: Dictionary of language configurations
-- Default display mode: `'unified'`
-- Default language detection: Based on file extension
+`Atom` and `ListNode` live in `linediff.model` and remain importable from `linediff.diff` for compatibility. Their `position` is a zero-based UTF-8 byte offset into the source, both for Tree-sitter nodes and line fallback nodes. The parser API does not imply that the CLI can render structural diffs for every installed grammar. See the [tested support matrix](PARSER_SUPPORT.md).
 
-## Dependencies
+## CLI contract
 
-### Required
-- `typing-extensions` (for Python < 3.10)
-
-### Optional (for syntax-aware diffing)
-- `tree-sitter` and language-specific parsers
-
-## Version Information
-
-Current version: 0.1.0 (Alpha)
-
-For the latest API changes, check the [changelog](changelog.md).
+`python -m linediff` and the installed `linediff` entry point share the same CLI. It accepts two file paths, a Linediff-specific stdin pair separated by a line containing only `---`, or Git external-diff's seven or nine arguments. In `--check-only` mode the exit codes are `0` same, `1` different, `2` error. Successful display exits `0`; errors go to stderr. `--display structural` is human-readable, while the default unified view is intended to be patchable for text files.
