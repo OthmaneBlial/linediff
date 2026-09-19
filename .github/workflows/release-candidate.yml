@@ -45,8 +45,31 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  standalone:
+  package-smoke:
     needs: package
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.8', '3.14']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: linediff-candidate-${{ inputs.version }}
+          path: dist/
+      - name: Install candidate archives outside checkout
+        run: python scripts/smoke_dist.py dist
+
+  standalone:
+    needs: [package, package-smoke]
     strategy:
       fail-fast: false
       matrix:
