@@ -1,6 +1,14 @@
 # Linediff 0.2.0a1 — candidate notes (not published)
 
-These notes describe the current candidate source on `main`. They are a draft for maintainer review, **not** a GitHub Release, PyPI announcement, or download link. The exact commit and artifact hashes must be filled from the final approved candidate build before publication.
+These notes describe the candidate source snapshot `0adeeae` on `main`. They are a draft for maintainer review, **not** a GitHub Release, PyPI announcement, or download link. The hashes below identify local candidate artifacts built from that exact commit; they are not public download checksums. Later commits may update evidence documentation without changing those packaged sources.
+
+Candidate commit: `0adeeae6df3690e3d4e341dc79b1cfcb56649315`
+
+Local candidate artifact hashes:
+
+- `linediff-0.2.0a1-py3-none-any.whl`: `4d3f6d263debbb170d72e568211d429c1a392d68e48adb4579f286eaa44c9f8a`
+- `linediff-0.2.0a1.tar.gz`: `84112df3006b5f7b213bdec5415dd78ce5a30bf3de89d1179d471b0a5b250fba`
+- `linediff-0.2.0a1-macos-arm64.tar.gz`: `51baec97d6f76eaa8f64a447095302bee9d0d4cc9fe05cf601da148130f4f8f9`
 
 ## What a developer gets
 
@@ -23,7 +31,7 @@ File operands must be regular UTF-8 text, up to 4 MiB and 20,000 lines each. The
 ## Validation before any publication
 
 - Local final candidate dry run and build on a clean commit, with tests, Ruff, documentation links, `twine check`, archive install smoke tests and SHA-256 checksums.
-- Green GitHub Actions CI for **that same commit**, including the six archive smoke jobs, three standalone OS jobs, security job and benchmark budgets.
+- Green GitHub Actions CI for **that same commit**, including the six archive smoke jobs, three standalone OS jobs, security job and benchmark budgets. Verified in [run 35446450376](https://github.com/OthmaneBlial/linediff/actions/runs/35446450376), with 42 jobs successful.
 - Optional read-only release-candidate workflow, followed by download and inspection of its temporary artifacts. It has not yet been dispatched for this version.
 - Review of the About description, tag, target accounts, release notes, platform labels and publication permissions with the maintainer. Public publishing requires separate authorization and verification.
 
