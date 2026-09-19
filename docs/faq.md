@@ -165,7 +165,7 @@ Absolutely! Use the `--check-only` flag for automated checks:
 
 ```bash
 linediff --check-only file1.py file2.py
-echo $?  # 0 = identical, 1 = different
+echo $?  # 0 = identical, 1 = different, 2 = error
 ```
 
 ## Advanced Questions

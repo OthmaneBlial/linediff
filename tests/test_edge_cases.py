@@ -76,9 +76,8 @@ def test_binary_content():
 
     try:
         code, stdout, stderr = run_difft(f1_path, f2_path)
-        # Binary files might be handled differently
-        assert code in [0, 1]
-        # Should not crash
+        assert code == 2
+        assert "binary" in stderr.lower()
     finally:
         os.unlink(f1_path)
         os.unlink(f2_path)

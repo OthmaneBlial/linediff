@@ -72,6 +72,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 1.2 Rendre les entrées et les codes de sortie fiables
 
+- [x] **Terminé localement (19 septembre 2026).** Codes `0/1/2` testés sur identique/différent/erreur, stdin à séparateur préservant les fins de ligne, erreurs de fichiers/binaires/UTF-8 sans traceback, noms commençant par `-`, pipe fermé, exemples `git diff | linediff` retirés. La suite locale et un script `set -e` sur les trois issues passent.
+
 - **Objectif :** permettre un usage sûr en shell et en CI.
 - **Changements :** distinguer code `0` identique, `1` différent et `2` erreur en mode de contrôle; spécifier le code du mode d'affichage; attraper permissions, répertoires, I/O, Unicode et pipe fermé sans traceback; router diagnostics vers stderr; corriger ou supprimer `git diff | linediff` et le séparateur maison; prendre en charge les noms contenant espaces et tirets.
 - **Fichiers :** `src/linediff/__main__.py`, `tests/test_cli.py`, `tests/test_error_handling.py`, `README.md`, `docs/usage.md`.

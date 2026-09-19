@@ -68,8 +68,8 @@ def test_malformed_utf8():
 
     try:
         code, stdout, stderr = run_difft(f_path, f_path)
-        # Should handle gracefully
-        assert code in [0, 1]
+        assert code == 2
+        assert "utf-8" in stderr.lower()
     finally:
         os.unlink(f_path)
 

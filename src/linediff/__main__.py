@@ -4,9 +4,14 @@
 import argparse
 import sys
 import os
+import re
 from pathlib import Path
 from typing import List, Tuple, Optional
 from .diff import compute_diff
+
+
+class LinediffInputError(Exception):
+    """A user-supplied input cannot be compared as UTF-8 text."""
 
 
 def detect_language(file_path: str) -> str:
@@ -40,45 +45,35 @@ def read_file_content(file_path: str) -> str:
     """Read content from file."""
     try:
         with open(file_path, 'r', encoding='utf-8', newline='') as f:
-            return f.read()
-    except FileNotFoundError:
-        print(f"Error: File '{file_path}' not found.", file=sys.stderr)
-        sys.exit(1)
-    except UnicodeDecodeError:
-        print(f"Error: Cannot decode file '{file_path}' as UTF-8.", file=sys.stderr)
-        sys.exit(1)
+            content = f.read()
+    except UnicodeDecodeError as error:
+        raise LinediffInputError("Cannot decode '{}' as UTF-8".format(file_path)) from error
+    except OSError as error:
+        raise LinediffInputError("Cannot read '{}': {}".format(file_path, error.strerror or error)) from error
+    if '\x00' in content:
+        raise LinediffInputError("Binary file '{}' contains NUL bytes".format(file_path))
+    return content
 
 
 def read_stdin_content() -> str:
     """Read content from stdin."""
-    return sys.stdin.read()
+    try:
+        content = sys.stdin.buffer.read().decode('utf-8')
+    except UnicodeDecodeError as error:
+        raise LinediffInputError("Cannot decode stdin as UTF-8") from error
+    except OSError as error:
+        raise LinediffInputError("Cannot read stdin: {}".format(error)) from error
+    if '\x00' in content:
+        raise LinediffInputError("Binary stdin contains NUL bytes")
+    return content
 
 
-def parse_git_diff_stdin(stdin_content: str) -> Tuple[str, str, str, str]:
-    """Parse Git diff format from stdin for --ext-diff."""
-    # Git --ext-diff sends: old-file new-file old-hex new-hex
-    # Followed by old-mode new-mode
-    # Then old content, then new content
-    # But for simplicity, assume stdin has two parts separated by a marker
-    # Actually, for external diff, Git provides the files as args, but perhaps here we parse diff output.
-    # For now, assume stdin has the diff text, but that doesn't make sense.
-    # Perhaps for git diff | linediff, to reformat.
-    # But the task says "parsing Git's diff format", so perhaps parse unified diff from stdin.
-    # To extract old and new content.
-    # This is complex. For now, assume stdin has old content, then ---, then new content or something.
-    # Let's assume simple: if no files, read two contents from stdin separated by a line with ---.
-    lines = stdin_content.splitlines()
-    separator_index = -1
-    for i, line in enumerate(lines):
-        if line.strip() == '---':
-            separator_index = i
-            break
-    if separator_index == -1:
-        print("Error: Stdin input must contain '---' separator for old and new content.", file=sys.stderr)
-        sys.exit(1)
-    old_content = '\n'.join(lines[:separator_index])
-    new_content = '\n'.join(lines[separator_index + 1:])
-    return old_content, new_content, 'old', 'new'
+def parse_pair_stdin(stdin_content: str) -> Tuple[str, str, str, str]:
+    """Split the legacy Linediff pair format without altering line endings."""
+    separator = re.search(r'(?m)^---(?:\r?\n|$)', stdin_content)
+    if separator is None:
+        raise LinediffInputError("Stdin must contain a line with only '---' between the two texts")
+    return stdin_content[:separator.start()], stdin_content[separator.end():], 'old', 'new'
 
 
 def format_diff(diff_lines: List[str], fromfile: str, tofile: str, lang: str = 'text', display_mode: str = 'unified') -> str:
@@ -210,37 +205,32 @@ def format_inline_diff(diff_lines: List[str], fromfile: str, tofile: str, lang: 
     return result
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description="A lightweight line diff tool with Git integration.")
     parser.add_argument("files", nargs='*', help="Files to compare or Git external diff args")
-    parser.add_argument("--check-only", action="store_true", help="Check if files are identical (exit code 0 if same, 1 if different)")
+    parser.add_argument("--check-only", action="store_true", help="Check if files are identical (0 same, 1 different, 2 error)")
     parser.add_argument("--language", help="Override language detection")
     parser.add_argument("--display", choices=['unified', 'side-by-side', 'inline'], default='unified',
                        help="Display mode for diffs (default: unified)")
     args = parser.parse_args()
 
-    # Handle different input modes
-    if len(args.files) == 7:
-        # Git external diff: path old-file old-hex old-mode new-file new-hex new-mode
-        _, old_file, _, _, new_file, _, _ = args.files
-        content1 = read_file_content(old_file)
-        content2 = read_file_content(new_file)
-        fromfile = old_file
-        tofile = new_file
-    elif len(args.files) == 2:
-        # Two files
-        file1, file2 = args.files
-        content1 = read_file_content(file1)
-        content2 = read_file_content(file2)
-        fromfile = file1
-        tofile = file2
-    elif len(args.files) == 0:
-        # Read from stdin
-        stdin_content = read_stdin_content()
-        content1, content2, fromfile, tofile = parse_git_diff_stdin(stdin_content)
-    else:
-        print("Error: Provide 0 files (stdin), 2 files, or 7 files (Git external diff).", file=sys.stderr)
-        sys.exit(1)
+    try:
+        if len(args.files) == 7:
+            # Git external diff: path old-file old-hex old-mode new-file new-hex new-mode.
+            _, fromfile, _, _, tofile, _, _ = args.files
+            content1 = read_file_content(fromfile)
+            content2 = read_file_content(tofile)
+        elif len(args.files) == 2:
+            fromfile, tofile = args.files
+            content1 = read_file_content(fromfile)
+            content2 = read_file_content(tofile)
+        elif len(args.files) == 0:
+            content1, content2, fromfile, tofile = parse_pair_stdin(read_stdin_content())
+        else:
+            raise LinediffInputError("Provide 0 files (stdin), 2 files, or 7 Git external diff arguments")
+    except LinediffInputError as error:
+        print("Error: {}".format(error), file=sys.stderr)
+        return 2
 
     # Detect language
     lang = args.language or detect_language(fromfile)
@@ -250,23 +240,25 @@ def main():
         diff_lines = compute_diff(content1, content2, fromfile, tofile)
     except Exception as e:
         print(f"Error: Failed to compute diff: {e}", file=sys.stderr)
-        sys.exit(1)
+        return 2
 
     if args.check_only:
-        # Check if identical
-        if not diff_lines:
-            sys.exit(0)  # identical
-        else:
-            sys.exit(1)  # different
-    else:
-        # Output formatted diff
-        try:
-            formatted_diff = format_diff(diff_lines, fromfile, tofile, lang, args.display)
-            print(formatted_diff)
-        except Exception as e:
-            print(f"Error: Failed to format diff: {e}", file=sys.stderr)
-            sys.exit(1)
+        return 0 if not diff_lines else 1
+
+    try:
+        formatted_diff = format_diff(diff_lines, fromfile, tofile, lang, args.display)
+        print(formatted_diff, flush=True)
+    except BrokenPipeError:
+        # Avoid another broken pipe while Python flushes stdout on shutdown.
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, sys.stdout.fileno())
+        os.close(devnull)
+        return 0
+    except Exception as error:
+        print("Error: Failed to format diff: {}".format(error), file=sys.stderr)
+        return 2
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

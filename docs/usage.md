@@ -24,7 +24,7 @@ linediff [OPTIONS] FILE1 FILE2
 
 #### Options
 
-- `--check-only`: Check if files are identical (returns exit code 0 if same, 1 if different)
+- `--check-only`: Check if files are identical (`0` same, `1` different, `2` input or processing error)
 - `--language LANG`: Override automatic language detection
 - `--display MODE`: Display mode - `unified` (default), `side-by-side`, or `inline`
 - `--help`: Show help message
@@ -113,7 +113,7 @@ Use in automated pipelines to check for differences:
 
 ```bash
 linediff --check-only file1.py file2.py
-echo $?  # 0 = identical, 1 = different
+echo $?  # 0 = identical, 1 = different, 2 = error
 ```
 
 Example in a CI script:
@@ -123,24 +123,25 @@ Example in a CI script:
 if linediff --check-only generated.py expected.py; then
     echo "✅ Files match expected output"
 else
-    echo "❌ Files differ from expected output"
-    exit 1
+    result=$?
+    if [ "$result" -eq 1 ]; then
+        echo "Files differ from expected output"
+        exit 1
+    fi
+    echo "Linediff could not compare the files" >&2
+    exit 2
 fi
 ```
 
 ## Reading from Standard Input
 
-### From Git Diff Output
+### Git diff streams
 
-Pipe Git diff output through Linediff:
-
-```bash
-git diff | linediff
-```
+Linediff does not parse the output of `git diff` on stdin. Use the external diff integration described above for Git; the stdin format below is specific to Linediff.
 
 ### From Stdin with Separator
 
-Provide content via stdin with a separator:
+Provide two UTF-8 texts via stdin with a line containing only `---` as separator:
 
 ```bash
 cat > /tmp/diff_input << 'EOF'

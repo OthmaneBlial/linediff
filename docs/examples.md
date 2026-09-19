@@ -140,16 +140,7 @@ linediff config_old.json config_new.json
 
 ### Review Changes in Git
 
-```bash
-# See changes in working directory
-git diff | linediff
-
-# Compare specific commits
-git diff HEAD~1 HEAD | linediff
-
-# Compare branches
-git diff main feature-branch | linediff
-```
+Git invokes Linediff as an external diff command with file arguments. Piping the output of `git diff` into Linediff is unsupported. See the [Git integration guide](usage.md#git-integration) for the current setup and limitations.
 
 ### Side-by-Side View
 
@@ -165,8 +156,13 @@ linediff --display side-by-side old.py new.py
 if linediff --check-only expected_output.py generated.py; then
     echo "✅ Generated code matches expected output"
 else
-    echo "❌ Generated code differs from expected"
-    exit 1
+    result=$?
+    if [ "$result" -eq 1 ]; then
+        echo "Generated code differs from expected"
+        exit 1
+    fi
+    echo "Linediff could not compare the files" >&2
+    exit 2
 fi
 ```
 
@@ -305,43 +301,23 @@ linediff large_old.py large_new.py  # Falls back to line-based diffing
 ```bash
 # Compare multiple files in a loop
 for file in *.py; do
-    if ! linediff --check-only "$file" "backup/$file"; then
-        echo "$file has changed"
+    if linediff --check-only "$file" "backup/$file"; then
+        continue
+    else
+        result=$?
+        if [ "$result" -eq 1 ]; then
+            echo "$file has changed"
+        else
+            echo "Could not compare $file" >&2
+            exit 2
+        fi
     fi
 done
 ```
 
 ## Integration with Other Tools
 
-### With fzf (Fuzzy Finder)
-
-```bash
-# Interactive file selection
-git diff --name-only | fzf | xargs linediff
-```
-
-### With diff-so-fancy
-
-```bash
-# Use Linediff for syntax awareness, then pipe to diff-so-fancy
-linediff old.py new.py | diff-so-fancy
-```
-
-### With Git Aliases
-
-Add to your `~/.gitconfig`:
-
-```ini
-[alias]
-ld = !git diff | linediff
-lds = !git diff | linediff --display side-by-side
-```
-
-Then use:
-```bash
-git ld    # Unified diff with Linediff
-git lds   # Side-by-side diff with Linediff
-```
+Integrations with `fzf`, `diff-so-fancy`, and Git aliases need separate tests before commands are recommended here.
 
 ## Troubleshooting Examples
 

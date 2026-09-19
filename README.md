@@ -111,7 +111,7 @@ For CI/CD pipelines, use `--check-only` to check if files differ without output:
 
 ```bash
 linediff --check-only file1.py file2.py
-echo $?  # 0 = identical, 1 = different
+echo $?  # 0 = identical, 1 = different, 2 = input or processing error
 ```
 
 ### Language Override
@@ -143,13 +143,9 @@ linediff --display inline file1.py file2.py
 
 ### Reading from Stdin
 
-Pipe diff output through linediff:
+Linediff does not parse Git's unified diff stream from stdin. Git external diff invokes it with file arguments; see [Git Integration](#git-integration).
 
-```bash
-git diff | linediff
-```
-
-Or provide content via stdin with separator:
+Provide two UTF-8 texts via stdin with a line containing only `---` between them:
 
 ```bash
 cat > /tmp/diff_input << 'EOF'
