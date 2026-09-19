@@ -11,7 +11,7 @@ Run `python scripts/mutation_probe.py` after installing this checkout and `pytes
 | Ignore the forced `--language` choice | `test_language_override_selects_python_view_for_text_extension` |
 | Disable the Python structural route | `test_diagnostics_identify_route_only_on_stderr` |
 
-These are four selected mutations, not a general mutation score. CI runs them on Ubuntu/Python 3.12 in addition to the normal cross-platform suite.
+These are four selected mutations, not a general mutation score. CI ran them successfully on Ubuntu/Python 3.12 in [run 35445154639](https://github.com/OthmaneBlial/linediff/actions/runs/35445154639), alongside the normal cross-platform suite.
 
 ## Branch coverage
 

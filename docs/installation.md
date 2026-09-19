@@ -15,13 +15,13 @@ python3 -m venv .venv
 .venv/bin/linediff --display structural tests/fixtures/moved_function.old.py tests/fixtures/moved_function.new.py
 ```
 
-On Windows, use `py -m venv .venv` and `.venv\Scripts\python -m pip install .`; the command is `.venv\Scripts\linediff --help`. A `pipx`/`uv tool` walkthrough will be added only after clean-environment checks for those installers. The base CLI has no runtime Python package dependencies.
+On Windows, use `py -m venv .venv` and `.venv\Scripts\python -m pip install .`; the command is `.venv\Scripts\linediff --help`. The supported walkthrough uses `pip` in a virtual environment; `pipx` and `uv tool` have not been tested for this checkout. The base CLI has no runtime Python package dependencies.
 
 The [quickstart](QUICKSTART.md) shows an exact observed output and the one-shot Git command. The [limits](LIMITS.md) page covers file size and complexity guards.
 
 ## Standalone candidate
 
-`scripts/build_standalone.py` can freeze the base CLI with PyInstaller 6.22.3 on the current host. It packages no optional Tree-sitter grammar, so Python structural analysis uses the standard library AST and other languages use the text fallback. A macOS arm64 development archive was built and smoke-tested locally; Linux and Windows archives are configured in the manual candidate workflow but have not yet been observed. No standalone download has been published. The [release guide](RELEASING.md) explains the candidate gate.
+`scripts/build_standalone.py` can freeze the base CLI with PyInstaller 6.22.3 on the current host. It packages no optional Tree-sitter grammar, so Python structural analysis uses the standard library AST and other languages use the text fallback. A macOS arm64 development archive was built and smoke-tested locally; standalone CI jobs on Linux, macOS and Windows succeeded in [run 35444327149](https://github.com/OthmaneBlial/linediff/actions/runs/35444327149). The manual versioned candidate workflow has not yet been run. No standalone download has been published. The [release guide](RELEASING.md) explains the candidate gate.
 
 ## Optional grammars
 
@@ -44,3 +44,5 @@ The first command adds the Python grammar. The second adds all eight registered 
 ```
 
 Package metadata and optional dependencies live in `pyproject.toml`. The former `requirements.txt` contained Markdown tooling unrelated to Linediff and has been removed.
+
+The metadata still uses the legacy `license = {text = "MIT"}` form so source builds can retain Python 3.8 support. Setuptools 77 introduced the modern SPDX field but requires Python 3.9 or newer; current setuptools prints a deprecation warning for the legacy form, with a February 2027 removal date in the build output observed on 19 September 2026. The MIT text in `LICENSE` is included in both source and wheel distributions. This warning is a known packaging tradeoff and needs a Python support decision before that deadline. Ruff is the active formatter and linter; inactive Black, isort and mypy settings have been removed.
