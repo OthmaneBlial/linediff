@@ -83,8 +83,10 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 1.3 Prouver l'intégration Git avant de la recommander
 
+- [x] **Terminé sur macOS arm64 (19 septembre 2026); Linux/Windows non vérifiés.** Un vrai dépôt temporaire couvre modification, création, suppression, renommage à neuf arguments, binaire, fichier avec espaces et retour à `git diff --no-ext-diff`. La commande du README a été exécutée avec le binaire installé dans un environnement isolé. Les plateformes restantes seront exercées par la matrice de la phase 4.
+
 - **Objectif :** fournir un parcours Git fiable, limité et réversible.
-- **Changements :** tester réellement le protocole à sept arguments de `git diff --ext-diff`; traiter création, suppression, renommage, fichiers temporaires et binaires; choisir une commande d'activation locale au dépôt et de désactivation; retirer la recommandation de configuration globale tant que tous les cas ne passent pas.
+- **Changements :** tester réellement les protocoles à sept et neuf arguments de `git diff --ext-diff`; traiter création, suppression, renommage, fichiers temporaires et binaires; choisir une commande d'activation locale au dépôt et de désactivation; retirer la recommandation de configuration globale tant que tous les cas ne passent pas.
 - **Fichiers :** `src/linediff/__main__.py`, nouveaux `tests/test_git_integration.py`, `README.md`, `docs/usage.md`.
 - **Acceptation :** un dépôt temporaire Git produit un diff correct sur les cas annoncés; l'exemple copié depuis le README fonctionne et la désactivation restaure le comportement initial.
 - **Validation :** tests d'intégration avec vrai `git diff --ext-diff` sur Linux, macOS et Windows ou déclarer les plateformes non vérifiées; comparaison avec `git diff --no-ext-diff`.

@@ -33,11 +33,8 @@ Ensure you've installed the optional tree-sitter dependencies: `pip install line
 ### How do I use Linediff with Git?
 
 ```bash
-# One-time setup
-git config --global diff.external linediff
-
-# Now all git diff commands use Linediff
-git diff
+# No persistent Git configuration is changed
+git -c diff.external=linediff diff --ext-diff
 ```
 
 ### What display modes are available?
@@ -111,11 +108,10 @@ Linediff expects UTF-8 encoded files. Convert your files to UTF-8 or ensure they
 
 ### Git diff doesn't use Linediff
 
-Verify your Git configuration:
+Try the one-shot external diff command:
 
 ```bash
-git config --global diff.external
-# Should show "linediff"
+git -c diff.external=linediff diff --ext-diff
 ```
 
 ### Performance is slow on large files

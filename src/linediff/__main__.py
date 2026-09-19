@@ -55,6 +55,16 @@ def read_file_content(file_path: str) -> str:
     return content
 
 
+def read_git_bytes(file_path: str) -> bytes:
+    """Read one Git external-diff operand, including Git's null-file sentinel."""
+    if file_path == '/dev/null':
+        return b''
+    try:
+        return Path(file_path).read_bytes()
+    except OSError as error:
+        raise LinediffInputError("Cannot read Git operand '{}': {}".format(file_path, error.strerror or error)) from error
+
+
 def read_stdin_content() -> str:
     """Read content from stdin."""
     try:
@@ -207,19 +217,47 @@ def format_inline_diff(diff_lines: List[str], fromfile: str, tofile: str, lang: 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="A lightweight line diff tool with Git integration.")
-    parser.add_argument("files", nargs='*', help="Files to compare or Git external diff args")
+    parser.add_argument("files", nargs='*', help="Two files or Git external diff arguments")
     parser.add_argument("--check-only", action="store_true", help="Check if files are identical (0 same, 1 different, 2 error)")
     parser.add_argument("--language", help="Override language detection")
     parser.add_argument("--display", choices=['unified', 'side-by-side', 'inline'], default='unified',
                        help="Display mode for diffs (default: unified)")
     args = parser.parse_args()
 
+    git_mode = len(args.files) in (7, 9)
+    modes_differ = False
+    names_differ = False
+    binary_git_diff = False
     try:
-        if len(args.files) == 7:
-            # Git external diff: path old-file old-hex old-mode new-file new-hex new-mode.
-            _, fromfile, _, _, tofile, _, _ = args.files
-            content1 = read_file_content(fromfile)
-            content2 = read_file_content(tofile)
+        if git_mode:
+            # Git adds new-path and metadata for renames/copies (nine arguments).
+            git_path, old_file, _, old_mode, new_file, _, new_mode = args.files[:7]
+            new_path = git_path
+            if len(args.files) == 9:
+                new_path = args.files[7]
+            names_differ = git_path != new_path
+            fromfile = '/dev/null' if old_mode == '.' else 'a/' + git_path
+            tofile = '/dev/null' if new_mode == '.' else 'b/' + new_path
+            old_bytes = read_git_bytes(old_file)
+            new_bytes = read_git_bytes(new_file)
+            modes_differ = old_mode != new_mode
+            try:
+                content1 = old_bytes.decode('utf-8')
+                content2 = new_bytes.decode('utf-8')
+            except UnicodeDecodeError:
+                binary_git_diff = True
+            else:
+                binary_git_diff = '\x00' in content1 or '\x00' in content2
+            if binary_git_diff:
+                if args.check_only:
+                    return 0 if old_bytes == new_bytes and not modes_differ and not names_differ else 1
+                if old_bytes == new_bytes and names_differ:
+                    print("Renamed binary file: {} -> {}".format(git_path, new_path), flush=True)
+                elif old_bytes == new_bytes and modes_differ:
+                    print("Mode changed for {}: {} -> {}".format(git_path, old_mode, new_mode), flush=True)
+                else:
+                    print("Binary files differ: {}".format(git_path), flush=True)
+                return 0
         elif len(args.files) == 2:
             fromfile, tofile = args.files
             content1 = read_file_content(fromfile)
@@ -227,13 +265,13 @@ def main() -> int:
         elif len(args.files) == 0:
             content1, content2, fromfile, tofile = parse_pair_stdin(read_stdin_content())
         else:
-            raise LinediffInputError("Provide 0 files (stdin), 2 files, or 7 Git external diff arguments")
+            raise LinediffInputError("Provide 0 files (stdin), 2 files, or 7/9 Git external diff arguments")
     except LinediffInputError as error:
         print("Error: {}".format(error), file=sys.stderr)
         return 2
 
     # Detect language
-    lang = args.language or detect_language(fromfile)
+    lang = args.language or detect_language(git_path if git_mode else fromfile)
 
     # Compute diff
     try:
@@ -243,7 +281,15 @@ def main() -> int:
         return 2
 
     if args.check_only:
-        return 0 if not diff_lines else 1
+        return 0 if not diff_lines and not modes_differ and not names_differ else 1
+
+    if git_mode and not diff_lines:
+        if names_differ:
+            print("Renamed: {} -> {}".format(git_path, new_path), flush=True)
+            return 0
+        if modes_differ:
+            print("Mode changed for {}: {} -> {}".format(git_path, old_mode, new_mode), flush=True)
+            return 0
 
     try:
         formatted_diff = format_diff(diff_lines, fromfile, tofile, lang, args.display)

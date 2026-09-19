@@ -23,7 +23,7 @@ The first target user is a developer reviewing a Python change locally or in a G
 | `--check-only` | Compare exact source content without printing a diff. | `0` identical, `1` different, `2` input or processing error. |
 | `--language python` | Override extension detection for a supported parser. | Must select the Python parser when the structural view is requested; an unknown language name is an error. |
 | No file arguments | Preserve the existing `---`-separated pair input for now. | Document it as a Linediff-specific format, not Git unified diff. Preserve trailing newlines exactly. |
-| Git external diff | Accept the seven arguments passed by `git diff --ext-diff`. | Render the changed pair without changing repository settings. Document a repository-local activation and removal command. |
+| Git external diff | Accept the seven arguments for ordinary changes and nine for renames or copies passed by `git diff --ext-diff`. | Render the changed pair without changing repository settings. Use a one-shot repository command so the setting disappears after the command. |
 
 Binary files, non-UTF-8 files, directories, and missing files must be handled clearly as errors or as a documented binary status; they must never be reported as identical. Warnings and errors belong on stderr. An applicable unified patch must not contain structural annotations or ANSI escape codes. Use `--` to disambiguate filenames that start with `-`.
 

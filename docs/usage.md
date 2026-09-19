@@ -74,36 +74,16 @@ linediff --display inline file1.py file2.py
 
 ## Git Integration
 
-### Basic Git Diff Replacement
+### One-shot Git external diff
 
-Replace Git's default diff tool:
-
-```bash
-git config --global diff.external linediff
-```
-
-Now `git diff` will use Linediff automatically.
-
-### Language-Specific Configuration
-
-Set up Linediff for specific file types:
+Run Linediff on changed files without changing Git configuration:
 
 ```bash
-git config --global diff.linediff.command "linediff --language python"
-git config --global diff.linediff.binary false
+git -c diff.external=linediff diff --ext-diff
+git -c diff.external=linediff diff --cached --ext-diff
 ```
 
-### Project-Wide Configuration
-
-Add to your `.gitattributes` file:
-
-```gitattributes
-*.py diff=linediff
-*.js diff=linediff
-*.json diff=linediff
-*.html diff=linediff
-*.css diff=linediff
-```
+The setting applies only to that command. Use `git diff --no-ext-diff` to see Git's normal output. Linediff prints readable text hunks for changed, added, deleted and renamed files, and a status line for binary changes. Git may split renames into separate deletion and addition entries with other external-diff configurations. This output is for review, not a replacement for the full Git patch format.
 
 ## CI/CD Integration
 

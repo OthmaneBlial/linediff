@@ -80,30 +80,18 @@ Compare any two files with intelligent diffing:
 linediff file1.py file2.py
 ```
 
-See the difference? It's not just lines – it's code structure! 🎉
+The current output is a line diff. The planned structural view is tracked in the roadmap.
 
 ### Git Integration
 
-Linediff can be used as Git's external diff tool:
+Run Git's external diff for one command, without changing repository or global configuration:
 
-#### Global Setup
 ```bash
-git config --global diff.external linediff
+git -c diff.external=linediff diff --ext-diff
+git -c diff.external=linediff diff --cached --ext-diff
 ```
 
-#### Per-Language Configuration
-```bash
-git config diff.python.command "linediff --language python"
-git config diff.python.binary false
-```
-
-#### Project Configuration
-Add to `.gitattributes`:
-```gitattributes
-*.py diff=python
-*.js diff=javascript
-*.json diff=json
-```
+The normal `git diff --no-ext-diff` remains available. Git invokes Linediff once per changed file; added and deleted text files are shown against `/dev/null`. Binary changes are reported by name. The one-shot command also shows renamed paths. This view is intended for review; use native `git diff` when you need the full Git patch format.
 
 ### Check-Only Mode
 

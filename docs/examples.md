@@ -217,30 +217,9 @@ new content" | linediff
 ### Git External Diff Setup
 
 ```bash
-# Configure Git to use Linediff
-git config --global diff.external linediff
-
-# Now all git diff commands use Linediff
-git diff
-git diff --cached
-git diff HEAD~1
-```
-
-### Project Configuration (.gitattributes)
-
-Create a `.gitattributes` file in your repository:
-
-```gitattributes
-# Use Linediff for these file types
-*.py diff=linediff
-*.js diff=linediff
-*.ts diff=linediff
-*.json diff=linediff
-*.html diff=linediff
-*.css diff=linediff
-*.rs diff=linediff
-*.go diff=linediff
-*.java diff=linediff
+# Use Linediff for only this Git invocation
+git -c diff.external=linediff diff --ext-diff
+git -c diff.external=linediff diff --cached --ext-diff
 ```
 
 ## Real-World Scenarios
@@ -251,11 +230,11 @@ Create a `.gitattributes` file in your repository:
 # Developer workflow
 git checkout -b feature/new-functionality
 # Make changes...
-git diff  # Uses Linediff automatically if configured
+git -c diff.external=linediff diff --ext-diff
 
 # Reviewer workflow
 git checkout feature/new-functionality
-git diff main...HEAD | linediff --display side-by-side
+git -c diff.external=linediff diff --ext-diff main...HEAD
 ```
 
 ### Automated Testing
@@ -266,6 +245,7 @@ linediff --check-only tests/expected_output.py generated.py
 
 # Exit code 0 = files identical
 # Exit code 1 = files differ
+# Exit code 2 = input or processing error
 ```
 
 ### Documentation Updates
