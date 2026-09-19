@@ -107,6 +107,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 2.2 Fiabiliser Tree-sitter et les langues annoncées
 
+- [x] **Terminé localement sur macOS arm64/Python 3.14.6; autres plateformes et versions non vérifiées.** Chargement indépendant des huit grammaires avec versions figées, extra Python seul, offsets UTF-8 corrigés et fallback explicite. Trois installations isolées (base, Python seul, extra complet), les tests de capacités et la suite complète avec extra complet passent; `--language python` sélectionne la vue Python sur un `.txt`. `docs/PARSER_SUPPORT.md` distingue grammaire disponible et diff structurel réellement livré.
+
 - **Objectif :** faire correspondre l'installation, la détection et le support effectif.
 - **Changements :** isoler l'import de chaque grammaire, choisir et tester une plage de versions Tree-sitter compatible avec l'API utilisée, corriger les offsets en octets UTF-8 et la gestion des arbres avec erreurs; passer `--language` au parseur; n'activer dans l'interface que les langues dont le rendu syntaxique a un oracle réel; conserver explicitement le fallback texte pour les autres.
 - **Fichiers :** `src/linediff/parser.py`, `src/linediff/__main__.py`, `pyproject.toml`, `tests/test_parser.py`, `tests/test_languages.py`.

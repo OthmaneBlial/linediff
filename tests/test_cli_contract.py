@@ -81,6 +81,15 @@ class CliContractTests(unittest.TestCase):
             result = run_cli("--check-only", "--", "-old.txt", "-new.txt", cwd=directory)
             self.assertEqual(result.returncode, 1, result.stderr.decode(errors="replace"))
 
+    def test_unknown_language_is_a_usage_error(self):
+        result = run_cli(
+            "--language", "unknown-grammar", "tests/fixtures/replace.old.txt",
+            "tests/fixtures/replace.new.txt",
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stdout, b"")
+        self.assertIn(b"invalid choice", result.stderr)
+
     def test_closed_output_pipe_does_not_print_traceback(self):
         process = subprocess.Popen(
             [sys.executable, "-m", "linediff", "tests/fixtures/long_line.old.txt", "tests/fixtures/long_line.new.txt"],

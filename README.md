@@ -58,17 +58,19 @@ cd linediff
 pip install -e .
 ```
 
-### Supercharge with Syntax Parsers
+### Optional Tree-sitter parsers
 
-Unlock the full power of syntax-aware diffing:
+On development `main`, the Python structural view works without Tree-sitter. To test the optional parsers **from this checkout** before a new package release, run:
 
 ```bash
-# Get all language parsers
-pip install linediff[tree-sitter]
+# Python grammar only (Python 3.10+)
+pip install -e '.[python]'
 
-# Or pick your favorites
-pip install tree-sitter-python tree-sitter-javascript tree-sitter-json
+# All eight registered grammars (Python 3.10+)
+pip install -e '.[tree-sitter]'
 ```
+
+See the [tested support matrix](docs/PARSER_SUPPORT.md) before describing another language as structurally supported.
 
 ## 🎯 Usage
 

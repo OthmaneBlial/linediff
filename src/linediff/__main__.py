@@ -11,6 +11,12 @@ from .diff import compute_diff
 from .structural import analyze_python_changes
 
 
+KNOWN_LANGUAGES = {
+    'text', 'python', 'javascript', 'typescript', 'java', 'c', 'cpp', 'rust',
+    'go', 'ruby', 'php', 'html', 'css', 'json', 'xml', 'yaml', 'markdown',
+}
+
+
 class LinediffInputError(Exception):
     """A user-supplied input cannot be compared as UTF-8 text."""
 
@@ -20,7 +26,12 @@ def detect_language(file_path: str) -> str:
     ext = Path(file_path).suffix.lower()
     lang_map = {
         '.py': 'python',
+        '.pyw': 'python',
+        '.pyi': 'python',
         '.js': 'javascript',
+        '.jsx': 'javascript',
+        '.mjs': 'javascript',
+        '.cjs': 'javascript',
         '.ts': 'typescript',
         '.java': 'java',
         '.c': 'c',
@@ -246,7 +257,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="A lightweight line diff tool with Git integration.")
     parser.add_argument("files", nargs='*', help="Two files or Git external diff arguments")
     parser.add_argument("--check-only", action="store_true", help="Check if files are identical (0 same, 1 different, 2 error)")
-    parser.add_argument("--language", help="Override language detection")
+    parser.add_argument("--language", choices=sorted(KNOWN_LANGUAGES), help="Override language detection")
     parser.add_argument("--display", choices=['unified', 'side-by-side', 'inline', 'structural'], default='unified',
                        help="Display mode for diffs (default: unified)")
     args = parser.parse_args()

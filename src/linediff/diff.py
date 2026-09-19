@@ -4,18 +4,7 @@ import heapq
 from collections import defaultdict
 import difflib
 
-# Syntax Tree Data Structures
-@dataclass
-class Atom:
-    """Represents an atomic element in the syntax tree."""
-    value: str
-    position: int
-
-@dataclass
-class ListNode:
-    """Represents a list node in the syntax tree."""
-    children: List[Union['ListNode', Atom]]
-    position: int
+from .model import Atom, ListNode
 
 # Graph-based Structural Diffing
 @dataclass
@@ -213,12 +202,9 @@ class DiffEngine:
                     records.append('\\ No newline at end of file')
         return records
 
-# Import the new tree-sitter parser
-try:
-    from .parser import parse_to_tree as ts_parse_to_tree
-    TREE_SITTER_PARSER_AVAILABLE = True
-except ImportError:
-    TREE_SITTER_PARSER_AVAILABLE = False
+from .parser import TREE_SITTER_AVAILABLE, parse_to_tree as ts_parse_to_tree
+
+TREE_SITTER_PARSER_AVAILABLE = TREE_SITTER_AVAILABLE
 
 # Utility functions
 def count_nodes(node: Union[ListNode, Atom]) -> int:
@@ -229,17 +215,7 @@ def count_nodes(node: Union[ListNode, Atom]) -> int:
 
 def parse_to_tree(content: str, file_path: Optional[str] = None) -> ListNode:
     """Parse content into syntax tree using tree-sitter if available, fallback to basic parsing."""
-    if TREE_SITTER_PARSER_AVAILABLE:
-        try:
-            return ts_parse_to_tree(content, file_path)
-        except Exception as e:
-            print(f"Warning: Tree-sitter parsing failed, falling back to basic parsing: {e}")
-            # Fall through to basic parsing
-
-    # Fallback to basic line-based parsing
-    lines = content.splitlines()
-    atoms = [Atom(line, i) for i, line in enumerate(lines)]
-    return ListNode(atoms, 0)
+    return ts_parse_to_tree(content, file_path)
 
 def compute_diff(left_content: str, right_content: str, left_file_path: Optional[str] = None, right_file_path: Optional[str] = None) -> List[str]:
     """Compute an exact text diff; structural rendering is added separately."""

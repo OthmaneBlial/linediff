@@ -17,18 +17,18 @@ The easiest way to install Linediff is from PyPI:
 pip install linediff
 ```
 
-This installs the basic version with line-based diffing. For full syntax-aware functionality, continue to the next section.
+The tagged 0.1.3 package has line diffing; the Python structural view is currently available on development `main`, not in a verified published release. Other languages use text fallback.
 
-### With Syntax Parsers (Full Features)
+### With Optional Tree-sitter Parsers (Python 3.10+)
 
-To unlock Linediff's full potential with syntax-aware diffing, install with tree-sitter parsers:
+Tree-sitter is optional for Python source ranges and the parser API. These commands apply **inside a clone of development `main`**. Installing additional grammars does not yet make other languages structurally diffable in the CLI:
 
 ```bash
-# Install all supported language parsers
-pip install linediff[tree-sitter]
+# Install only the Python grammar
+pip install -e '.[python]'
 
-# Or install specific parsers for your languages
-pip install tree-sitter-python tree-sitter-javascript tree-sitter-json
+# Install all registered grammars
+pip install -e '.[tree-sitter]'
 ```
 
 **Supported parsers:**
@@ -40,6 +40,8 @@ pip install tree-sitter-python tree-sitter-javascript tree-sitter-json
 - `tree-sitter-rust` - Rust parsing
 - `tree-sitter-go` - Go parsing
 - `tree-sitter-java` - Java parsing
+
+See [parser support](PARSER_SUPPORT.md) for the tested versions and the difference between parsing and a structural CLI view.
 
 ### From Source (Development)
 
