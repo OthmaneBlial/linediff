@@ -8,6 +8,7 @@ resident memory is measured per case rather than across previous cases.
 
 import argparse
 import json
+import math
 import platform
 import statistics
 import subprocess
@@ -65,6 +66,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repeats", type=int, default=5)
     parser.add_argument("--timeout-seconds", type=int, default=15)
+    parser.add_argument("--max-cli-ms", type=float)
+    parser.add_argument("--max-worker-rss-mib", type=float)
     parser.add_argument("--worker", choices=SELECTED)
     args = parser.parse_args()
     if args.worker:
@@ -74,6 +77,14 @@ def main():
         parser.error("--repeats must be positive")
     if args.timeout_seconds < 1:
         parser.error("--timeout-seconds must be positive")
+    if args.max_cli_ms is not None and (
+        not math.isfinite(args.max_cli_ms) or args.max_cli_ms <= 0
+    ):
+        parser.error("--max-cli-ms must be positive")
+    if args.max_worker_rss_mib is not None and (
+        not math.isfinite(args.max_worker_rss_mib) or args.max_worker_rss_mib <= 0
+    ):
+        parser.error("--max-worker-rss-mib must be positive")
 
     results = []
     for case_id in SELECTED:
@@ -137,6 +148,24 @@ def main():
         text=True,
         check=False,
     ).stdout.strip()
+    failures = []
+    for result in results:
+        if args.max_cli_ms is not None and result["median_cli_ms"] > args.max_cli_ms:
+            failures.append(
+                "{} CLI median {} ms exceeds {} ms".format(
+                    result["id"], result["median_cli_ms"], args.max_cli_ms
+                )
+            )
+        peak = result["max_peak_rss_mib"]
+        if args.max_worker_rss_mib is not None:
+            if peak is None:
+                failures.append("{} worker peak RSS unavailable".format(result["id"]))
+            elif peak > args.max_worker_rss_mib:
+                failures.append(
+                    "{} worker peak RSS {} MiB exceeds {} MiB".format(
+                        result["id"], peak, args.max_worker_rss_mib
+                    )
+                )
     print(
         json.dumps(
             {
@@ -146,11 +175,18 @@ def main():
                 "python": platform.python_version(),
                 "repeats": args.repeats,
                 "timeout_seconds": args.timeout_seconds,
+                "budgets": {
+                    "max_cli_ms": args.max_cli_ms,
+                    "max_worker_rss_mib": args.max_worker_rss_mib,
+                },
                 "results": results,
+                "budget_failures": failures,
             },
             indent=2,
         )
     )
+    if failures:
+        raise SystemExit("\n".join(failures))
 
 
 if __name__ == "__main__":
