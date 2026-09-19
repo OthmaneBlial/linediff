@@ -236,6 +236,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 6.1 Mettre le processus de release sous garde
 
+- [ ] **En cours (19 septembre 2026).** L'ancien script de publication anticipée est remplacé par une validation/compilation locale sans identifiants, tag, push ni upload; un workflow manuel ne produit que des artefacts Actions temporaires avec accès GitHub en lecture seule. Le guide `docs/RELEASING.md` décrit les contrôles et la vérification après publication. Dans un clone propre avec version de test `0.2.0a1`, le mode à blanc n'a créé aucun diff; tests, Ruff, liens, build, `twine check` et smoke isolé des deux archives ont passé. Le workflow candidat réel et une méthode de publication approuvée restent à valider.
+
 - **Objectif :** produire une version traçable dont les artefacts correspondent au code validé.
 - **Changements :** refondre `scripts/release-kit.sh` pour valider l'arbre propre et tous les gates avant mutation; rendre `--dry-run` réellement sans effet; ne jamais taguer ni téléverser avec tests ou `twine check` contournés; remplacer les identifiants locaux par publication à identité fédérée si la cible le permet; séparer préparation, approbation, build et publication; générer notes de release factuelles.
 - **Fichiers :** `scripts/release-kit.sh`, `.github/workflows/` (workflow de release à créer), `CHANGELOG.md`, nouveau `docs/RELEASING.md`.

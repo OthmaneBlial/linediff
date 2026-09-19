@@ -1,357 +1,108 @@
 #!/usr/bin/env bash
+# Validate and build a release candidate. Publication is a separate, approved step.
 set -euo pipefail
-IFS=$'\n\t'
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PYPROJECT="$REPO_ROOT/pyproject.toml"
-CHANGELOG="$REPO_ROOT/CHANGELOG.md"
-TAG_PREFIX="v"
-REMOTE="origin"
-
-BUMP_TYPE=""
-NEW_VERSION=""
-RELEASE_NOTES=""
-NOTES_FILE=""
-REPO="pypi"
-DRY_RUN=false
-SKIP_TESTS=false
-SKIP_CHECK=false
-SKIP_UPLOAD=false
-SKIP_GIT=false
-SKIP_PUSH=false
-
-log() {
-    printf "➤ %s\n" "$*"
-}
-
-die() {
-    printf "❌ %s\n" "$*" >&2
-    exit 1
-}
-
-require_command() {
-    if ! command -v "$1" &> /dev/null; then
-        die "required command '$1' is missing"
-    fi
-}
-
-load_env_file() {
-    local env_file="$REPO_ROOT/.env"
-    if [[ -f "$env_file" ]]; then
-        log "Loading credentials from .env"
-        set -o allexport
-        # shellcheck source=/dev/null
-        source "$env_file"
-        set +o allexport
-    fi
-}
-
-run_or_dry() {
-    log "$*"
-    if [[ "$DRY_RUN" == "false" ]]; then
-        "$@"
-    else
-        log "(dry-run; skipping execution)"
-    fi
-}
-
-prompt() {
-    local prompt="$1"
-    local default="$2"
-    local answer
-    read -rp "$prompt" answer
-    if [[ -z "$answer" ]]; then
-        printf '%s\n' "$default"
-    else
-        printf '%s\n' "$answer"
-    fi
-}
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
 
 usage() {
     cat <<'EOF'
-Usage: $(basename "$0") [options]
+Usage: scripts/release-kit.sh [--dry-run | --build --out-dir DIRECTORY]
 
-Options:
-  -b, --bump TYPE         semver bump (patch/minor/major); prompted if omitted
-  -v, --version VERSION   set explicit version instead of bumping
-  -n, --notes TEXT        release notes (can include Markdown)
-  --notes-file PATH       load release notes from a file
-  -r, --repo NAME         twine repository (default: pypi)
-  --dry-run               show actions without executing them
-  --skip-tests            skip pytest
-  --skip-check            skip `twine check`
-  --skip-upload           build but do not upload
-  --no-git                skip git checks, commits, and tags
-  --no-push               skip pushing commits and tags
-  -h, --help              display this help message
+The package version and dated changelog entry must already be committed.
+--dry-run checks release metadata and the Git tree without changing files.
+--build runs local gates, builds wheel/sdist, checks them, and smoke-tests both.
+This script never tags, pushes, uploads, publishes, or reads credentials.
 EOF
 }
 
+mode=dry-run
+out_dir=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        -b|--bump)
-            BUMP_TYPE="$2"
-            shift 2
-            ;;
-        -v|--version)
-            NEW_VERSION="$2"
-            shift 2
-            ;;
-        -n|--notes)
-            RELEASE_NOTES="$2"
-            shift 2
-            ;;
-        --notes-file)
-            NOTES_FILE="$2"
-            shift 2
-            ;;
-        -r|--repo)
-            REPO="$2"
-            shift 2
-            ;;
         --dry-run)
-            DRY_RUN=true
+            [[ "$mode" == dry-run && -z "$out_dir" ]] || { usage >&2; exit 2; }
             shift
             ;;
-        --skip-tests)
-            SKIP_TESTS=true
+        --build)
+            [[ "$mode" == dry-run ]] || { usage >&2; exit 2; }
+            mode=build
             shift
             ;;
-        --skip-check)
-            SKIP_CHECK=true
-            shift
-            ;;
-        --skip-upload)
-            SKIP_UPLOAD=true
-            shift
-            ;;
-        --no-git)
-            SKIP_GIT=true
-            shift
-            ;;
-        --no-push)
-            SKIP_PUSH=true
-            shift
+        --out-dir)
+            [[ $# -ge 2 && -z "$out_dir" ]] || { usage >&2; exit 2; }
+            out_dir="$2"
+            shift 2
             ;;
         -h|--help)
             usage
             exit 0
             ;;
         *)
-            die "unexpected argument: $1"
+            usage >&2
+            exit 2
             ;;
     esac
 done
 
-cd "$REPO_ROOT"
+[[ "$mode" == build && -n "$out_dir" || "$mode" == dry-run && -z "$out_dir" ]] || {
+    usage >&2
+    exit 2
+}
 
-load_env_file
-
-require_command python
-require_command git
-require_command rm
-require_command pip
-
-log "Starting release conductor"
-
-log "Ensuring build tooling"
-needs_install=false
-if ! command -v twine &> /dev/null; then
-    needs_install=true
-    log "Twine missing"
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Release candidate requires a clean Git tree" >&2
+    exit 1
 fi
 
-if ! python - <<'PY'
-import importlib, sys
-
-try:
-    importlib.import_module("build")
-except ImportError:
-    sys.exit(1)
-PY
-then
-    needs_install=true
-    log "Build module missing"
-fi
-
-if [[ "$needs_install" == "true" ]]; then
-    run_or_dry python -m pip install --upgrade --quiet build twine
-else
-    log "Build tooling already installed"
-fi
-
-current_version=$(
-    PYPROJECT_PATH="$PYPROJECT" python - <<'PY'
+python_bin="${PYTHON:-python3}"
+version=$("$python_bin" - <<'PY'
 from pathlib import Path
-import os, re, sys
+import re
 
-path = Path(os.environ["PYPROJECT_PATH"])
-text = path.read_text()
-match = re.search(r'^\s*version\s*=\s*(["\'])([^"\']+)\1', text, re.MULTILINE)
-if not match:
-    print(f"version not declared in {path}", file=sys.stderr)
-    sys.exit(1)
-print(match.group(2))
+project = Path("pyproject.toml").read_text(encoding="utf-8")
+match = re.search(r'(?m)^version = "([^"]+)"$', project)
+if not match or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+|b[0-9]+|rc[0-9]+)?", match.group(1)):
+    raise SystemExit("Expected one explicit PEP 440 release version in pyproject.toml")
+version = match.group(1)
+changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+if not re.search(r"(?m)^## \[{}\] - \d{{4}}-\d{{2}}-\d{{2}}$".format(re.escape(version)), changelog):
+    raise SystemExit("Add a dated changelog section for {} before building".format(version))
+print(version)
 PY
 )
 
-log "Current version: $current_version"
-
-if [[ -n "$NOTES_FILE" ]]; then
-    if [[ ! -f "$NOTES_FILE" ]]; then
-        die "notes file '$NOTES_FILE' does not exist"
-    fi
-    RELEASE_NOTES=$(< "$NOTES_FILE")
+if git rev-parse --verify --quiet "refs/tags/v${version}" >/dev/null; then
+    echo "Tag v${version} already exists; choose an unused version" >&2
+    exit 1
 fi
 
-if [[ -z "$NEW_VERSION" ]]; then
-    if [[ -z "$BUMP_TYPE" ]]; then
-        echo "Choose version bump (patch/minor/major). Default: patch"
-        BUMP_TYPE=$(prompt "Bump type: [patch] " "patch")
-    fi
-    case "$BUMP_TYPE" in
-        patch|minor|major) ;;
-        *)
-            die "invalid bump type '$BUMP_TYPE'; choose patch, minor or major"
-            ;;
-    esac
-    NEW_VERSION=$(
-        CURRENT_VERSION="$current_version" BUMP_TYPE="$BUMP_TYPE" python - <<'PY'
-import os, sys
-
-current = os.environ["CURRENT_VERSION"].split(".")
-if len(current) < 3:
-    raise SystemExit("expected semver-like version in pyproject.toml")
-major, minor, patch = map(int, current[:3])
-bump = os.environ["BUMP_TYPE"]
-if bump == "patch":
-    patch += 1
-elif bump == "minor":
-    minor += 1
-    patch = 0
-elif bump == "major":
-    major += 1
-    minor = 0
-    patch = 0
-print(f"{major}.{minor}.{patch}")
-PY
-    )
+printf 'Release candidate: v%s at %s\n' "$version" "$(git rev-parse --short HEAD)"
+if [[ "$mode" == dry-run ]]; then
+    echo "Dry run passed. Build will run tests, Ruff, link check, build, twine check and wheel/sdist smoke tests."
+    exit 0
 fi
 
-log "New version: $NEW_VERSION"
+"$python_bin" -m pytest -q
+"$python_bin" -m ruff check src/linediff tests scripts
+"$python_bin" -m ruff format --check src/linediff tests scripts
+"$python_bin" scripts/check_docs.py
 
-if [[ -z "$RELEASE_NOTES" ]]; then
-    RELEASE_NOTES="- TODO: describe the changes for $NEW_VERSION"
+mkdir -p "$out_dir"
+out_dir="$(cd "$out_dir" && pwd)"
+if [[ -n "$(find "$out_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+    echo "Output directory must be empty: $out_dir" >&2
+    exit 1
 fi
 
-today=$(date -u +"%Y-%m-%d")
-
-if [[ ! -f "$CHANGELOG" ]]; then
-    cat <<'HEADER' > "$CHANGELOG"
-# Changelog
-All notable changes to this project will be documented here.
-
-HEADER
-fi
-
-existing_entries=$(tail -n +4 "$CHANGELOG" || true)
-
-{
-    printf '# Changelog\nAll notable changes to this project will be documented here.\n\n'
-    printf '## [%s] - %s\n\n%s\n\n' "$NEW_VERSION" "$today" "$RELEASE_NOTES"
-    if [[ -n "$existing_entries" ]]; then
-        printf '%s\n' "$existing_entries"
-    fi
-} > "$CHANGELOG"
-
-NEW_VERSION="$NEW_VERSION" python - <<'PY'
+"$python_bin" -m build --outdir "$out_dir"
+"$python_bin" -m twine check "$out_dir"/*
+"$python_bin" scripts/smoke_dist.py "$out_dir"
+"$python_bin" - "$out_dir" <<'PY'
+from hashlib import sha256
 from pathlib import Path
-import os, re
+import sys
 
-path = Path("pyproject.toml")
-new_version = os.environ["NEW_VERSION"]
-data = path.read_text()
-new = re.sub(r'(?m)^version\s*=\s*".*"$', f'version = "{new_version}"', data, count=1)
-if data == new:
-    raise SystemExit("failed to update version in pyproject")
-path.write_text(new)
+for artifact in sorted(Path(sys.argv[1]).iterdir()):
+    print("{}  {}".format(sha256(artifact.read_bytes()).hexdigest(), artifact))
 PY
-
-log "Updated pyproject.toml + CHANGELOG.md"
-
-if [[ "$SKIP_GIT" != "true" ]]; then
-    branch=$(git symbolic-ref --short HEAD)
-    if [[ -n $(git status --porcelain) ]]; then
-        log "✔ git working tree has local changes (continuing because release flow will commit/tag them)"
-    fi
-    log "on branch $branch"
-fi
-
-if [[ "$SKIP_TESTS" != "true" ]]; then
-    run_or_dry python -m pytest --color=yes -v --tb=short
-else
-    log "Skipping pytest (--skip-tests)"
-fi
-
-log "Cleaning previous build artifacts"
-if [[ "$DRY_RUN" == "false" ]]; then
-    rm -rf build dist *.egg-info
-else
-    log "(dry-run; skipping rm -rf build dist *.egg-info)"
-fi
-
-run_or_dry python -m build
-
-if [[ "$SKIP_CHECK" != "true" ]]; then
-    run_or_dry twine check dist/*
-else
-    log "Skipping twine check (--skip-check)"
-fi
-
-if [[ "$SKIP_UPLOAD" == "true" ]]; then
-    log "Upload skipped (--skip-upload)"
-else
-    placeholder="pypi-XXXXXXXXXXXXXXXXXXXXXXXX"
-    detect_placeholder() {
-        local value="$1"
-        if [[ "$value" == *"$placeholder"* ]]; then
-            die "placeholder PyPI token detected; configure a real API token"
-        fi
-    }
-
-    if [[ -z "${TWINE_USERNAME:-}" ]] || [[ -z "${TWINE_PASSWORD:-}" ]]; then
-        config_file=""
-        if [[ -f "$REPO_ROOT/.pypirc" ]]; then
-            config_file="$REPO_ROOT/.pypirc"
-        elif [[ -f "$HOME/.pypirc" ]]; then
-            config_file="$HOME/.pypirc"
-        fi
-        if [[ -z "$config_file" ]]; then
-            die "no PyPI credentials found; set TWINE_USERNAME/TWINE_PASSWORD or create ~/.pypirc"
-        fi
-        detect_placeholder "$(cat "$config_file")"
-    else
-        detect_placeholder "$TWINE_PASSWORD"
-    fi
-
-    run_or_dry twine upload --repository "$REPO" dist/*
-fi
-
-if [[ "$SKIP_GIT" != "true" ]]; then
-    run_or_dry git add pyproject.toml CHANGELOG.md
-    commit_message="chore: release $NEW_VERSION"
-    run_or_dry git commit -m "$commit_message"
-    tag_name="$TAG_PREFIX$NEW_VERSION"
-    run_or_dry git tag -a "$tag_name" -m "Release $NEW_VERSION"
-
-    if [[ "$SKIP_PUSH" == "true" ]]; then
-        log "Push suppressed (--no-push)"
-    else
-        run_or_dry git push "$REMOTE" "$branch"
-        run_or_dry git push "$REMOTE" "$tag_name"
-    fi
-else
-    log "Git operations skipped (--no-git)"
-fi
-
-log "Release $NEW_VERSION complete"

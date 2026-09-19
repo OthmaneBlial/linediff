@@ -1,0 +1,46 @@
+name: Release candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version already committed in pyproject.toml and CHANGELOG.md
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e '.[dev]'
+      - name: Check requested version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          python - <<'PY'
+          import os
+          from importlib.metadata import version
+
+          actual = version("linediff")
+          requested = os.environ["REQUESTED_VERSION"]
+          if actual != requested:
+              raise SystemExit("Requested version does not match package metadata")
+          PY
+      - name: Validate and build
+        run: PYTHON=python bash scripts/release-kit.sh --build --out-dir dist
+      - uses: actions/upload-artifact@v7
+        with:
+          name: linediff-candidate-${{ inputs.version }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14

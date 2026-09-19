@@ -9,6 +9,7 @@ All notable changes to this project will be documented here.
 - Handle Git external diff renames, additions, deletions, binary changes and paths with spaces in integration tests.
 - Bound input sizes and expensive alignment; improve terminal color, width and line-number handling.
 - Add fixture corpus, installation smoke checks and a multi-OS CI matrix. Distribution and release publication remain separate gates.
+- Guard terminal output against unsafe file and Git diff content; replace the release uploader with a read-only candidate preparation flow.
 
 ## [0.1.3] - 2025-11-15
 
