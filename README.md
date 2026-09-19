@@ -9,7 +9,9 @@ Linediff is a terminal CLI for comparing two UTF-8 files. Its default output is 
 ## See it on a real fixture
 
 ```bash
-linediff --display structural tests/fixtures/moved_function.old.py tests/fixtures/moved_function.new.py
+linediff --display structural \
+  tests/fixtures/moved_function.old.py \
+  tests/fixtures/moved_function.new.py
 ```
 
 The output identifies `MOVED calculate_total [old lines 1-2; new lines 4-5]`, then prints an `Exact text diff:` section with the full unified patch. The [quickstart](docs/QUICKSTART.md) includes the complete output, pinned by a test to the current CLI.
@@ -76,7 +78,7 @@ Each text operand is capped at 4 MiB, 20,000 lines, and 200,000 characters per l
 .venv/bin/ruff format --check src/linediff tests scripts
 ```
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md), the [developer API](docs/api.md), and the [product contract](docs/PRODUCT.md). The CI workflow runs a Python and OS matrix, optional grammar profiles, formatting, linting, and wheel/sdist smoke checks; inspect its [current results](https://github.com/OthmaneBlial/linediff/actions/workflows/ci.yml) before relying on a green status.
+Read [CONTRIBUTING.md](CONTRIBUTING.md), the [developer API](docs/api.md), and the [product contract](docs/PRODUCT.md). For help or private vulnerability reporting, see [support](SUPPORT.md) and the [security policy](SECURITY.md). The CI workflow runs a Python and OS matrix, optional grammar profiles, formatting, linting, and wheel/sdist smoke checks; inspect its [current results](https://github.com/OthmaneBlial/linediff/actions/workflows/ci.yml) before relying on a green status.
 
 ## License
 

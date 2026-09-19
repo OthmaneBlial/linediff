@@ -8,7 +8,16 @@ from urllib.parse import unquote
 
 
 ROOT = Path(__file__).resolve().parent.parent
-DOCUMENTS = [ROOT / name for name in ("README.md", "CONTRIBUTING.md", "CHANGELOG.md")]
+DOCUMENTS = [
+    ROOT / name
+    for name in (
+        "README.md",
+        "CONTRIBUTING.md",
+        "CHANGELOG.md",
+        "SECURITY.md",
+        "SUPPORT.md",
+    )
+]
 DOCUMENTS += sorted((ROOT / "docs").glob("*.md"))
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*#*\s*$", re.MULTILINE)

@@ -210,7 +210,7 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 5.2 Réécrire la documentation sur les capacités observées
 
-- [ ] **En cours (19 septembre 2026).** README et guides `PRODUCT`, index, FAQ, usage et exemples réécrits autour de la CLI actuelle; promesses multilangues, performances, téléchargements et site non vérifiés retirés. `scripts/check_docs.py` vérifie les liens locaux (15 fichiers) et l'exemple du quickstart est lié à un test. Rendu Markdown GitHub et nouvelle exécution CI avec ce contrôle restent à examiner.
+- [x] **Terminé pour la documentation du code de développement (19 septembre 2026).** README et guides `PRODUCT`, index, FAQ, usage et exemples réécrits autour de la CLI actuelle; promesses multilangues, performances, téléchargements et site non vérifiés retirés. `scripts/check_docs.py` vérifie les liens locaux de 18 fichiers, l'exemple du quickstart est lié à un test, `twine check` passe et le README rendu sur GitHub a été inspecté visuellement. Le run CI `35443085289` incluant le contrôle des liens est vert. Les futurs liens de release restent soumis à 6.3.
 
 - **Objectif :** restaurer la confiance et réduire le temps jusqu'à la première preuve.
 - **Changements :** resserrer README autour du problème, de la démo réelle, de l'installation, des commandes exactes et des limites; corriger version et liens obsolètes dans `docs/`; retirer chiffres de performance non mesurés et promesses de cache, langages ou hébergement non validés; choisir une seule source de documentation en ligne ou rester sur GitHub tant que le site n'est pas publié.
@@ -220,6 +220,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 - **Dépendances / risques :** dépend des phases 1–3; une prose plus courte exige de choisir les preuves les plus convaincantes.
 
 ### 5.3 Créer des preuves visuelles et un dépôt accueillant
+
+- [ ] **En cours (19 septembre 2026).** Guide de contribution unifié, modèles d'issue/PR, `SECURITY.md`, `SUPPORT.md` et projet de métadonnées dans `docs/GITHUB_PRESENTATION.md` créés. Le README a été inspecté dans son rendu GitHub : il s'affiche correctement, mais la description About distante conserve une promesse ancienne. Capture terminal fidèle, revue mobile, essai du guide dans un clone propre et mise à jour autorisée des métadonnées restent à faire.
 
 - **Objectif :** rendre la valeur compréhensible en quelques secondes et faciliter une première contribution.
 - **Changements :** capturer de vrais terminaux pour le cas Python et la comparaison Git, fournir image/GIF seulement si lisible et légère, texte alternatif et transcription; simplifier `CONTRIBUTING.md` et `docs/contributing.md`, ajouter templates d'issue/PR, catégories « good first issue », politique de support et métadonnées GitHub pertinentes; éviter badges de téléchargements/performance sans vérification.
