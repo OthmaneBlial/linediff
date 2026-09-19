@@ -142,7 +142,7 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 3.2 Donner une vraie UX de lecture des changements
 
-- [ ] **En cours (19 septembre 2026).** Couleur `auto/always/never`, respect de `NO_COLOR` en mode auto, largeur terminal/`--width`, colonnes avec numéros de lignes, troncature visible et sommaire sont implémentés; tests 80/120 colonnes, Unicode large, redirection et caractères de contrôle passent. Captures réelles et revue sur fonds clair/sombre restent à faire.
+- [x] **Terminé et vérifié localement (19 septembre 2026).** Couleur `auto/always/never`, respect de `NO_COLOR` en mode auto, largeur terminal/`--width`, colonnes avec numéros de lignes, troncature visible et sommaire sont implémentés. Tests 80/120 colonnes, Unicode large, redirection et caractères de contrôle passent. Les trois modes ont été capturés par un vrai PTY sur les fixtures `data/move_*.py`, rendus en SVG clair/sombre et inspectés visuellement dans Chrome; la vue principale a aussi été inspectée à 390 px. Le texte mobile reste petit mais vectoriel et zoomable; `tests/test_capture.py` lie les enregistrements à la sortie actuelle.
 
 - **Objectif :** rendre le résultat scannable dans un terminal ordinaire et dans un README.
 - **Changements :** couleur `auto/always/never` selon TTY et `NO_COLOR`, entêtes et statuts cohérents, largeur terminal mesurée, troncature ou retour à la ligne contrôlé, colonnes alignées pour ajouts/suppressions, positions de lignes, signal de déplacement et sommaire; éviter les codes ANSI dans fichiers redirigés.
@@ -223,7 +223,7 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 5.3 Créer des preuves visuelles et un dépôt accueillant
 
-- [ ] **En cours (19 septembre 2026).** Guide de contribution unifié, modèles d'issue/PR, `SECURITY.md`, `SUPPORT.md` et projet de métadonnées dans `docs/GITHUB_PRESENTATION.md` créés. Le guide a été essayé dans un clone propre avec une installation `.[dev]`, tests, Ruff et liens locaux verts. Le README a été inspecté dans son rendu GitHub : il s'affiche correctement, mais la description About distante conserve une promesse ancienne. Capture terminal fidèle, revue mobile et mise à jour autorisée des métadonnées restent à faire.
+- [ ] **En cours (19 septembre 2026).** Guide de contribution unifié, modèles d'issue/PR, `SECURITY.md`, `SUPPORT.md` et projet de métadonnées dans `docs/GITHUB_PRESENTATION.md` créés. Le guide a été essayé dans un clone propre avec une installation `.[dev]`, tests, Ruff et liens locaux verts. Captures fidèles des trois modes, variantes claire/sombre et provenance contrôlée ajoutées au dépôt; la principale a été revue à largeur mobile. Le README précédent s'affichait correctement sur GitHub, mais le nouveau média intégré doit encore être vérifié sur la page GitHub; la description About distante conserve une promesse ancienne. Sa mise à jour autorisée reste à faire.
 
 - **Objectif :** rendre la valeur compréhensible en quelques secondes et faciliter une première contribution.
 - **Changements :** capturer de vrais terminaux pour le cas Python et la comparaison Git, fournir image/GIF seulement si lisible et légère, texte alternatif et transcription; simplifier `CONTRIBUTING.md` et `docs/contributing.md`, ajouter templates d'issue/PR, catégories « good first issue », politique de support et métadonnées GitHub pertinentes; éviter badges de téléchargements/performance sans vérification.

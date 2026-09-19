@@ -9,12 +9,12 @@ Linediff is a terminal CLI for comparing two UTF-8 files. Its default output is 
 ## See it on a real fixture
 
 ```bash
-linediff --display structural \
-  tests/fixtures/moved_function.old.py \
-  tests/fixtures/moved_function.new.py
+.venv/bin/linediff --display structural data/move_a.py data/move_b.py
 ```
 
-The output identifies `MOVED calculate_total [old lines 1-2; new lines 4-5]`, then prints an `Exact text diff:` section with the full unified patch. The [quickstart](docs/QUICKSTART.md) includes the complete output, pinned by a test to the current CLI.
+![Real terminal output identifying a moved Python function, followed by its exact text diff](assets/terminal-structural-dark.svg)
+
+The captured output identifies `MOVED calculate_total [old lines 1-2; new lines 4-5]`, then prints an `Exact text diff:` section with the full unified patch. [Light-background capture](assets/terminal-structural-light.svg) · [Raw terminal recording and method](docs/DEMO_ASSETS.md). The [quickstart](docs/QUICKSTART.md) includes another complete output, pinned by a test to the current CLI.
 
 The default view remains a plain patch:
 

@@ -1,0 +1,2 @@
+{"version": 2, "width": 60, "height": 18}
+[0.0, "o", "Structural view (human-readable; not an applicable patch)\r\nMOVED calculate_total [old lines 1-2; new lines 4-5]\r\n\r\nExact text diff:\r\n--- data/move_a.py\r\n+++ data/move_b.py\r\n@@ -1,5 +1,5 @@\r\n+def keep():\r\n+    pass\r\n+\r\n def calculate_total(x):\r\n     return x\r\n-\r\n-def keep():\r\n-    pass\r\n"]

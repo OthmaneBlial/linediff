@@ -13,6 +13,7 @@ All notable changes to this project will be documented here.
 - Reject non-regular file operands and add known-vulnerability and Git history secret checks to CI.
 - Add a candidate-only standalone CLI build and archive smoke checks for the supported host OSes.
 - Measure benchmark fixtures with per-process timeouts and cross-platform CI artifacts.
+- Add real terminal capture assets for structural, column and inline views, with test-checked provenance.
 
 ## [0.1.3] - 2025-11-15
 

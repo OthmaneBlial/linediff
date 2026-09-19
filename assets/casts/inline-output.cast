@@ -1,0 +1,2 @@
+{"version": 2, "width": 60, "height": 18}
+[0.0, "o", "data/move_a.py → data/move_b.py (human-readable)\r\n+3 / -3 lines · 1 hunk\r\n@@ -1,5 +1,5 @@\r\n\u001b[32m+def keep():\u001b[0m\r\n\u001b[32m+    pass\u001b[0m\r\n\u001b[32m+\u001b[0m\r\n def calculate_total(x):\r\n     return x\r\n\u001b[31m-\u001b[0m\r\n\u001b[31m-def keep():\u001b[0m\r\n\u001b[31m-    pass\u001b[0m\r\n"]

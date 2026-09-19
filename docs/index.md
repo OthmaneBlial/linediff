@@ -6,6 +6,7 @@ Linediff compares UTF-8 text in a terminal and can add a Python definition summa
 - [Installation from this checkout](installation.md)
 - [Usage and Git integration](usage.md)
 - [Examples](examples.md)
+- [Terminal capture provenance](DEMO_ASSETS.md)
 - [Product contract and exit codes](PRODUCT.md)
 - [Parser support](PARSER_SUPPORT.md)
 - [Input and complexity limits](LIMITS.md)

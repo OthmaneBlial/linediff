@@ -19,6 +19,14 @@ The fixture has the same two functions in a different order. The view names the 
 
 The structural view reports `CHANGED calculate_total (signature, body)`. The numbered column view marks cropped content with `…`; the unified diff gives the full lines.
 
+For a compact visual example on committed files, compare `data/move_a.py` and `data/move_b.py` with `--display side-by-side --width 80 --color always` or `--display inline --color always`:
+
+![Real side-by-side terminal output showing numbered Python lines and a moved function](../assets/terminal-columns-dark.svg)
+
+![Real inline terminal output showing added and removed Python lines](../assets/terminal-inline-dark.svg)
+
+[Light-background variants and capture provenance](DEMO_ASSETS.md).
+
 ## Check exact text in a script
 
 ```bash
