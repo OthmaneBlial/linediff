@@ -66,7 +66,7 @@ class GitIntegrationTests(unittest.TestCase):
         self.assertIn("--- /dev/null\n+++ b/added.py", output)
         self.assertIn("--- a/deleted.py\n+++ /dev/null", output)
         self.assertIn("--- a/changed.py\n+++ b/changed.py", output)
-        self.assertIn("-before\n+after", output)
+        self.assertIn("-before\n+after", output.replace("\r\n", "\n"))
         self.assertIn("Binary files differ: binary.dat", output)
         self.assertIn("space name.py", output)
         self.assertIn("--- a/renamed.py\n+++ b/renamed-again.py", output)

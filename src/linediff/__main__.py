@@ -2,6 +2,7 @@
 """CLI entry point for linediff."""
 
 import argparse
+import errno
 import sys
 import os
 import shutil
@@ -20,6 +21,10 @@ from .limits import DiffLimitError
 
 
 def main() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", newline="\n")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", newline="\n")
     parser = argparse.ArgumentParser(
         description="A lightweight line diff tool with Git integration."
     )
@@ -202,11 +207,14 @@ def main() -> int:
                 width=output_width,
             )
         print(formatted_diff, flush=True)
-    except BrokenPipeError:
-        # Avoid another broken pipe while Python flushes stdout on shutdown.
-        devnull = os.open(os.devnull, os.O_WRONLY)
-        os.dup2(devnull, sys.stdout.fileno())
-        os.close(devnull)
+    except OSError as error:
+        if error.errno != errno.EPIPE and not (
+            sys.platform == "win32" and error.errno == errno.EINVAL
+        ):
+            print("Error: Failed to write diff: {}".format(error), file=sys.stderr)
+            return 2
+        # Windows reports EINVAL for a closed pipe; replace stdout before shutdown.
+        sys.stdout = open(os.devnull, "w")
         return 0
     except Exception as error:
         print("Error: Failed to format diff: {}".format(error), file=sys.stderr)

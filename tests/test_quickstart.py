@@ -15,7 +15,7 @@ class QuickstartTests(unittest.TestCase):
             "tests/fixtures/moved_function.new.py",
         )
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.stdout.decode("utf-8"), expected)
+        self.assertEqual(result.stdout.decode("utf-8").replace("\r\n", "\n"), expected)
 
 
 if __name__ == "__main__":
