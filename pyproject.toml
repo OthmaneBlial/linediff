@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "linediff"
 version = "0.1.3"
-description = "A lightweight, syntax-aware diff tool for Python with tree-sitter integration"
+description = "Exact text diffs with an optional Python definition view"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.8"
@@ -40,9 +40,7 @@ classifiers = [
     "Topic :: Text Processing :: General",
     "Topic :: Utilities",
 ]
-dependencies = [
-    "typing-extensions>=4.0.0; python_version < '3.10'",
-]
+dependencies = []
 
 [project.optional-dependencies]
 python = [
@@ -61,17 +59,11 @@ tree-sitter = [
     "tree-sitter-java==0.23.5",
 ]
 dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "black>=22.0.0",
-    "flake8>=4.0.0",
-    "mypy>=1.0.0",
-    "isort>=5.10.0",
-    "pre-commit>=2.20.0",
-]
-docs = [
-    "sphinx>=5.0.0",
-    "sphinx-rtd-theme>=1.0.0",
+    "pytest>=7",
+    "pytest-cov>=4",
+    "ruff==0.16.8",
+    "build>=1",
+    "twine>=5",
 ]
 
 [project.scripts]
@@ -79,7 +71,6 @@ linediff = "linediff.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/OthmaneBlial/linediff"
-Documentation = "https://linediff.readthedocs.io/"
 Repository = "https://github.com/OthmaneBlial/linediff.git"
 Issues = "https://github.com/OthmaneBlial/linediff/issues"
 Changelog = "https://github.com/OthmaneBlial/linediff/blob/main/CHANGELOG.md"
@@ -91,9 +82,6 @@ include-package-data = true
 [tool.setuptools.packages.find]
 where = ["src"]
 exclude = ["tests*", "docs*"]
-
-[tool.setuptools.package-data]
-linediff = ["py.typed"]
 
 [tool.black]
 line-length = 88

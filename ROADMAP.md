@@ -199,6 +199,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 5.1 Rendre l'installation et les extras cohérents
 
+- [ ] **En cours (19 septembre 2026).** `pyproject.toml` est la source des dépendances; l'ancien `requirements.txt` Markdown, l'extra de documentation sans build et la déclaration `py.typed` absente ont été retirés. Guide d'installation réécrit pour la version de développement; wheel/sdist inspectés, `twine check` et smoke hors checkout passent sur macOS. La compatibilité Windows/Python de la nouvelle matrice et le choix de métadonnée de licence compatible avec Python 3.8 restent à valider.
+
 - **Objectif :** faire marcher les commandes copiées depuis le README et expliquer précisément ce qui s'installe.
 - **Changements :** aligner `pyproject.toml`, `requirements.txt` et guide d'installation; tester `pip`, `pipx` ou `uv tool` selon les parcours retenus; résoudre la compatibilité des versions Python/grammaires; retirer `py.typed` annoncé tant que le fichier et la vérification de typage ne sont pas prêts, ou le fournir réellement.
 - **Fichiers :** `pyproject.toml`, `requirements.txt`, `MANIFEST.in`, `src/linediff/py.typed` si justifié, `docs/installation.md`, `README.md`.
