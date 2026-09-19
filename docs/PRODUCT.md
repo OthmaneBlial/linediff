@@ -6,6 +6,8 @@ Linediff should make changes inside Python functions easier to review in a termi
 
 The current CLI compares two UTF-8 files and renders a line diff in unified, side-by-side, or inline form. `--check-only` reports whether its diff engine found changes. Git can invoke the CLI as an external diff command. The current structural graph has no path from its start vertex to its end vertex, so the result falls back to `difflib`. The line fallback also misses a difference consisting only of a final newline. The optional Tree-sitter installation and Git edge cases have not been verified. Other language names in the docs do not establish structural support.
 
+Development `main` now fixes the final-newline and CRLF comparisons and adds a separate Python AST-based structural view. These changes have local tests but are not part of the tagged 0.1.3 release. Tree-sitter extras and other structural languages still require validation.
+
 ## Target users and promise
 
 The first target user is a developer reviewing a Python change locally or in a Git repository. They need to find which function changed, whether a function moved, and what text actually changed. The default output must remain an exact text diff. A separate structural view may add context; it must never hide changed text or pretend to be an applicable patch.

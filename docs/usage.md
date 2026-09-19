@@ -1,6 +1,6 @@
 # Usage Guide
 
-> Version 0.1.3 currently falls back to line diffing. The [product contract](PRODUCT.md) distinguishes observed behavior from the planned structural view. The `---` separator accepted on stdin is a Linediff-specific pair format; `git diff | linediff` is not supported by this version.
+> Tagged version 0.1.3 falls back to line diffing. Development `main` adds `--display structural` for Python and fixes exact newline comparison; these changes are not yet a verified release. The [product contract](PRODUCT.md) records the limits. The `---` separator accepted on stdin is a Linediff-specific pair format; `git diff | linediff` is unsupported.
 
 This guide covers all the ways to use Linediff for comparing files and integrating with your workflow.
 
@@ -26,7 +26,7 @@ linediff [OPTIONS] FILE1 FILE2
 
 - `--check-only`: Check if files are identical (`0` same, `1` different, `2` input or processing error)
 - `--language LANG`: Override automatic language detection
-- `--display MODE`: Display mode - `unified` (default), `side-by-side`, or `inline`
+- `--display MODE`: `unified` (default), `side-by-side`, `inline`, or `structural`
 - `--help`: Show help message
 
 ## Display Modes
@@ -71,6 +71,16 @@ Highlighted changes in unified format:
 ```bash
 linediff --display inline file1.py file2.py
 ```
+
+### Python structural view (development `main`)
+
+This human-readable view identifies changed definitions and keeps the exact line diff underneath. It is **not** an applicable patch. For a reproducible move example from this repository:
+
+```bash
+linediff --display structural tests/fixtures/moved_function.old.py tests/fixtures/moved_function.new.py
+```
+
+The summary starts with `MOVED calculate_total [old lines 1-2; new lines 4-5]`, followed by the full unified text diff. Use `--language python` to request the same analysis for Python source stored with a non-`.py` extension. Unsupported languages fall back to text with an explicit message.
 
 ## Git Integration
 

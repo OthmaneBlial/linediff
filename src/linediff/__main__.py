@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 from typing import List, Tuple, Optional
 from .diff import compute_diff
+from .structural import analyze_python_changes
 
 
 class LinediffInputError(Exception):
@@ -215,12 +216,38 @@ def format_inline_diff(diff_lines: List[str], fromfile: str, tofile: str, lang: 
     return result
 
 
+def format_structural_diff(diff_lines: List[str], fromfile: str, tofile: str,
+                           language: str, before: str, after: str) -> str:
+    """Add Python AST context without changing the exact unified diff."""
+    lines = ["Structural view (human-readable; not an applicable patch)"]
+    if language != 'python':
+        lines.append("Text fallback: no verified structural view for '{}'".format(language))
+    else:
+        result = analyze_python_changes(before, after)
+        if not result.supported:
+            lines.append("Text fallback: {}".format(result.reason))
+        elif not result.changes:
+            lines.append("No indexed Python definition changed; see the text diff below.")
+        else:
+            for change in result.changes:
+                old_range = '{}-{}'.format(*change.old_lines) if change.old_lines else 'none'
+                new_range = '{}-{}'.format(*change.new_lines) if change.new_lines else 'none'
+                details = ' ({})'.format(', '.join(change.details)) if change.details else ''
+                lines.append(
+                    '{} {}{} [old lines {}; new lines {}]'.format(
+                        change.kind.upper(), change.definition, details, old_range, new_range
+                    )
+                )
+    lines.extend(["", "Exact text diff:", format_unified_diff(diff_lines, fromfile, tofile)])
+    return '\n'.join(lines)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="A lightweight line diff tool with Git integration.")
     parser.add_argument("files", nargs='*', help="Two files or Git external diff arguments")
     parser.add_argument("--check-only", action="store_true", help="Check if files are identical (0 same, 1 different, 2 error)")
     parser.add_argument("--language", help="Override language detection")
-    parser.add_argument("--display", choices=['unified', 'side-by-side', 'inline'], default='unified',
+    parser.add_argument("--display", choices=['unified', 'side-by-side', 'inline', 'structural'], default='unified',
                        help="Display mode for diffs (default: unified)")
     args = parser.parse_args()
 
@@ -292,7 +319,12 @@ def main() -> int:
             return 0
 
     try:
-        formatted_diff = format_diff(diff_lines, fromfile, tofile, lang, args.display)
+        if args.display == 'structural':
+            formatted_diff = format_structural_diff(
+                diff_lines, fromfile, tofile, lang, content1, content2
+            )
+        else:
+            formatted_diff = format_diff(diff_lines, fromfile, tofile, lang, args.display)
         print(formatted_diff, flush=True)
     except BrokenPipeError:
         # Avoid another broken pipe while Python flushes stdout on shutdown.

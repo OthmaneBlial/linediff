@@ -96,6 +96,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 2.1 Remplacer ou corriger le moteur structurel, avec preuve de valeur
 
+- [x] **Terminé localement sur macOS arm64 (19 septembre 2026).** La nouvelle vue `--display structural` utilise l'AST Python pour identifier déplacement de fonction, changement de signature/corps et modification de méthode; elle annexe le diff texte exact en le marquant non patchable. Les tests d'oracle couvrent les trois scénarios, la provenance des lignes, un reformatage sans faux changement et l'indépendance de l'analyse structurelle vis-à-vis de `difflib`. Le graphe expérimental reste à retirer lors de 2.3; Tree-sitter et les autres langues relèvent de 2.2.
+
 - **Objectif :** produire au moins un bénéfice syntaxique observable sur de vrais changements Python.
 - **Changements :** supprimer le chemin de graphe mort ou le rendre complet avec un algorithme documenté; choisir des unités AST stables (fonction, classe, bloc) avec positions source; aligner les changements sans perdre les lignes; identifier un déplacement de fonction et un changement local dans son contexte; séparer le signal structurel des hunks patchables.
 - **Fichiers :** `src/linediff/diff.py`, éventuellement nouveaux modules `model.py`/`structural.py`, `tests/test_diff_engine.py`, fixtures Python.
