@@ -10,6 +10,7 @@ All notable changes to this project will be documented here.
 - Bound input sizes and expensive alignment; improve terminal color, width and line-number handling.
 - Add fixture corpus, installation smoke checks and a multi-OS CI matrix. Distribution and release publication remain separate gates.
 - Guard terminal output against unsafe file and Git diff content; replace the release uploader with a read-only candidate preparation flow.
+- Reject non-regular file operands and add known-vulnerability and Git history secret checks to CI.
 
 ## [0.1.3] - 2025-11-15
 

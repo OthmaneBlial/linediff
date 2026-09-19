@@ -1,0 +1,7 @@
+# Dependency checks
+
+The base CLI has no required third-party runtime package. `pyproject.toml` pins Tree-sitter and eight grammar packages in optional extras. Development tools are installed separately. The CI security job installs the full grammar extra and `pip-audit==2.10.1`, then checks installed packages against known advisories; it also scans Git history with the official Gitleaks 8.30.1 Linux binary after verifying its SHA-256. Neither scan receives a repository secret or a publication credential.
+
+On 19 September 2026, the local audit initially identified `PYSEC-2026-3721` in the fresh environment's `pip 26.1.2`; upgrading to `pip 26.2.1` left no known vulnerabilities in that environment. The local Gitleaks run found no findings in the repository history. These results cover the packages and advisories visible at scan time; they do not prove that arbitrary input or bundled native code is safe.
+
+The CI job refreshes this evidence on each push and pull request. Review pinned parser and audit-tool versions at least monthly, read upstream release notes before changing pins, run the three grammar profiles and the full platform matrix, and record any advisory decision in an issue or release note. A failing scan blocks candidate package artifacts; a scanner outage should be recorded as unverified rather than interpreted as a clean result. Do not add real credentials to fixtures or reports.

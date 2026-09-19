@@ -71,8 +71,29 @@ jobs:
         env:
           LINEDIFF_EXPECT_PARSERS: ${{ matrix.profile }}
 
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --upgrade 'pip>=26.2'
+      - run: python -m pip install '.[tree-sitter]' pip-audit==2.10.1
+      - run: python -m pip_audit --local --skip-editable --progress-spinner off
+      - name: Scan Git history for secrets
+        run: |
+          curl -fsSL -o /tmp/gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  /tmp/gitleaks.tar.gz' | sha256sum -c -
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          /tmp/gitleaks git --redact --no-banner --log-level warn .
+
   package:
-    needs: [quality, test, grammars]
+    needs: [quality, test, grammars, security]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

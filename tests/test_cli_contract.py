@@ -20,6 +20,7 @@ def run_cli(*arguments, input_bytes=None, cwd=ROOT):
         cwd=cwd,
         env=ENV,
         capture_output=True,
+        timeout=10,
     )
 
 
@@ -97,6 +98,24 @@ class CliContractTests(unittest.TestCase):
             stdin = run_cli(input_bytes=b"old\n---\nnew\x1b[2J")
             self.assertEqual(stdin.returncode, 2)
             self.assertIn(b"U+001B", stdin.stderr)
+
+    @unittest.skipIf(os.name == "nt", "POSIX file types and symlinks")
+    def test_regular_file_symlink_is_allowed_but_fifo_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            regular = Path(directory, "regular.txt")
+            regular.write_bytes(b"hello\n")
+            link = Path(directory, "link.txt")
+            link.symlink_to(regular)
+            self.assertEqual(
+                run_cli("--check-only", str(link), str(regular)).returncode, 0
+            )
+
+            fifo = Path(directory, "fifo")
+            os.mkfifo(fifo)
+            rejected = run_cli("--check-only", str(fifo), str(regular))
+            self.assertEqual(rejected.returncode, 2)
+            self.assertIn(b"not a regular file", rejected.stderr)
+            self.assertEqual(rejected.stdout, b"")
 
     def test_stdin_pair_preserves_final_newline_and_crlf(self):
         for pair in (b"alpha\n---\nalpha", b"alpha\r\n---\r\nalpha\n"):

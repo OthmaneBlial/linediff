@@ -1,6 +1,8 @@
 """Read user-supplied file and stdin operands without changing their bytes."""
 
+import os
 import re
+import stat
 import sys
 import unicodedata
 from pathlib import Path
@@ -46,22 +48,43 @@ def validate_label(label: str) -> None:
         )
 
 
-def read_file_content(file_path: str) -> str:
+def _read_regular_bytes(file_path: str, label: str) -> bytes:
     validate_label(file_path)
     try:
-        if Path(file_path).stat().st_size > MAX_INPUT_BYTES:
-            raise DiffLimitError("'{}' exceeds the 4 MiB input limit".format(file_path))
-        with open(file_path, "r", encoding="utf-8", newline="") as stream:
-            content = stream.read(MAX_INPUT_BYTES + 1)
-        if len(content) > MAX_INPUT_BYTES:
-            raise DiffLimitError("'{}' exceeds the 4 MiB input limit".format(file_path))
-    except UnicodeDecodeError as error:
-        raise LinediffInputError(
-            "Cannot decode '{}' as UTF-8".format(file_path)
-        ) from error
+        metadata = Path(file_path).stat()
+        if not stat.S_ISREG(metadata.st_mode):
+            raise LinediffInputError(
+                "Cannot read {} '{}': not a regular file".format(label, file_path)
+            )
+        if metadata.st_size > MAX_INPUT_BYTES:
+            raise DiffLimitError(
+                "{} '{}' exceeds the 4 MiB input limit".format(label, file_path)
+            )
+        flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0) | getattr(os, "O_BINARY", 0)
+        with os.fdopen(os.open(file_path, flags), "rb") as stream:
+            if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+                raise LinediffInputError(
+                    "Cannot read {} '{}': not a regular file".format(label, file_path)
+                )
+            data = stream.read(MAX_INPUT_BYTES + 1)
+        if len(data) > MAX_INPUT_BYTES:
+            raise DiffLimitError(
+                "{} '{}' exceeds the 4 MiB input limit".format(label, file_path)
+            )
+        return data
     except OSError as error:
         raise LinediffInputError(
             "Cannot read '{}': {}".format(file_path, error.strerror or error)
+        ) from error
+
+
+def read_file_content(file_path: str) -> str:
+    data = _read_regular_bytes(file_path, "Text file")
+    try:
+        content = data.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise LinediffInputError(
+            "Cannot decode '{}' as UTF-8".format(file_path)
         ) from error
     if "\x00" in content:
         raise LinediffInputError(
@@ -79,25 +102,7 @@ def read_git_bytes(file_path: str) -> bytes:
     """Read a Git external-diff operand, including its null-file sentinel."""
     if file_path == "/dev/null":
         return b""
-    validate_label(file_path)
-    try:
-        if Path(file_path).stat().st_size > MAX_INPUT_BYTES:
-            raise DiffLimitError(
-                "Git operand '{}' exceeds the 4 MiB input limit".format(file_path)
-            )
-        with open(file_path, "rb") as stream:
-            data = stream.read(MAX_INPUT_BYTES + 1)
-        if len(data) > MAX_INPUT_BYTES:
-            raise DiffLimitError(
-                "Git operand '{}' exceeds the 4 MiB input limit".format(file_path)
-            )
-        return data
-    except OSError as error:
-        raise LinediffInputError(
-            "Cannot read Git operand '{}': {}".format(
-                file_path, error.strerror or error
-            )
-        ) from error
+    return _read_regular_bytes(file_path, "Git operand")
 
 
 def read_stdin_content() -> str:
