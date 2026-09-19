@@ -9,6 +9,7 @@ from .inputs import LinediffInputError, read_file_content, read_git_bytes, read_
 from .languages import KNOWN_LANGUAGES, detect_language
 from .render import format_diff, format_unified_diff, format_structural_diff
 from .structural import analyze_python_changes
+from .limits import DiffLimitError
 
 
 def main() -> int:
@@ -66,7 +67,7 @@ def main() -> int:
             content1, content2, fromfile, tofile = parse_pair_stdin(read_stdin_content())
         else:
             raise LinediffInputError("Provide 0 files (stdin), 2 files, or 7/9 Git external diff arguments")
-    except LinediffInputError as error:
+    except (LinediffInputError, DiffLimitError) as error:
         print("Error: {}".format(error), file=sys.stderr)
         return 2
 
@@ -76,6 +77,9 @@ def main() -> int:
     # Compute diff
     try:
         diff_lines = compute_diff(content1, content2, fromfile, tofile)
+    except DiffLimitError as error:
+        print("Error: {}".format(error), file=sys.stderr)
+        return 2
     except Exception as e:
         print(f"Error: Failed to compute diff: {e}", file=sys.stderr)
         return 2

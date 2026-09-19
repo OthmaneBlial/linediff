@@ -14,6 +14,8 @@ patch = format_unified_diff(records, "old.txt", "new.txt") + "\n"
 
 `compute_diff(left_content, right_content, left_file_path=None, right_file_path=None)` accepts decoded text and returns a list of unified-diff records. The path arguments are reserved for compatibility and do not affect the exact text calculation. Equal strings return `[]`. Final-newline and CRLF changes are retained, including `\ No newline at end of file` records where needed. `format_unified_diff` adds the requested file headers. Use the default CLI output when you need a patch for actual files; structural annotations are never an applicable patch.
 
+`compute_diff` raises `DiffLimitError` when an operand exceeds the [documented budgets](LIMITS.md). For line sets whose size product exceeds 8 million, it returns an exact whole-file replacement patch instead of fine-grained alignment.
+
 `DiffEngine.lcs_linear(left, right)` supplies ordered symbol anchors for the structural view. `DiffEngine.fallback_diff(left_lines, right_lines)` expects input lines **with original line endings** (`splitlines(keepends=True)`). The old graph and shortest-path classes have been removed because they did not produce a reachable structural result.
 
 ## Python structural analysis

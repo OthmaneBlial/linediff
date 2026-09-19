@@ -10,6 +10,7 @@ from dataclasses import dataclass, replace
 from typing import Dict, List, Optional, Set, Tuple
 
 from .diff import DiffEngine
+from .limits import MAX_STRUCTURAL_BYTES, MAX_DEFINITIONS
 
 
 FUNCTION_NODES = (ast.FunctionDef, ast.AsyncFunctionDef)
@@ -182,6 +183,8 @@ def _tree_sitter_positions(before: str, after: str, old_units: Dict[str, Definit
 
 def analyze_python_changes(before: str, after: str) -> StructuralResult:
     """Describe changed Python definitions without suppressing text changes."""
+    if max(len(before.encode('utf-8')), len(after.encode('utf-8'))) > MAX_STRUCTURAL_BYTES:
+        return StructuralResult(False, (), 'Python structural view exceeds the 1 MiB input limit')
     try:
         old_tree = ast.parse(before)
         new_tree = ast.parse(after)
@@ -190,6 +193,8 @@ def analyze_python_changes(before: str, after: str) -> StructuralResult:
 
     old_units, old_order, old_duplicate = _collect(old_tree)
     new_units, new_order, new_duplicate = _collect(new_tree)
+    if max(len(old_order), len(new_order)) > MAX_DEFINITIONS:
+        return StructuralResult(False, (), 'Python structural view exceeds 500 top-level definitions')
     if old_duplicate or new_duplicate:
         return StructuralResult(False, (), 'Repeated definition names make matching ambiguous')
 

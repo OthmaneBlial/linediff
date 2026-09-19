@@ -1,0 +1,7 @@
+# Input and complexity budgets (development `main`)
+
+Linediff reads UTF-8 text. Each operand is limited to 4 MiB encoded bytes, 20,000 lines, and 200,000 characters per line. The legacy stdin pair is capped at 8 MiB before decoding. Inputs outside these bounds exit with code `2` and a reason on stderr. Git binary operands use the same byte cap; ordinary binary files are rejected as text.
+
+The line matcher uses detailed alignment only when the product of the two line counts is at most 8 million. Above that threshold it emits a whole-file replacement patch. That patch preserves content and line endings, but it is less useful for review. Python structural analysis uses an additional 1 MiB and 500 top-level definition budget; above either it reports a text fallback and retains the exact text diff. The Tree-sitter API rejects inputs above 4 MiB and falls back to lines if tree conversion exceeds Python's recursion limit.
+
+These are conservative resource guards, not measured guarantees of wall time on every input. The checked-in corpus contains 2,000-line, 100,000-character-line, repeated-line, CRLF, Unicode, and binary cases. `tests/test_limits.py` checks all limits and applies a 3,000-line whole-file patch with `git apply`. The latest local measurement (macOS 26.6 arm64, Python 3.14.6, three repeats) gave a 2.1 ms median engine time and 23.42 MiB maximum process RSS for the 2,000-line fixture. Reproduce with `python scripts/benchmark.py --repeats 3`. Other operating systems and adversarial inputs still need CI validation.

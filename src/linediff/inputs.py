@@ -4,6 +4,7 @@ import re
 import sys
 from pathlib import Path
 from typing import Tuple
+from .limits import MAX_INPUT_BYTES, DiffLimitError
 
 
 class LinediffInputError(Exception):
@@ -12,8 +13,12 @@ class LinediffInputError(Exception):
 
 def read_file_content(file_path: str) -> str:
     try:
+        if Path(file_path).stat().st_size > MAX_INPUT_BYTES:
+            raise DiffLimitError("'{}' exceeds the 4 MiB input limit".format(file_path))
         with open(file_path, 'r', encoding='utf-8', newline='') as stream:
-            content = stream.read()
+            content = stream.read(MAX_INPUT_BYTES + 1)
+        if len(content) > MAX_INPUT_BYTES:
+            raise DiffLimitError("'{}' exceeds the 4 MiB input limit".format(file_path))
     except UnicodeDecodeError as error:
         raise LinediffInputError("Cannot decode '{}' as UTF-8".format(file_path)) from error
     except OSError as error:
@@ -30,7 +35,13 @@ def read_git_bytes(file_path: str) -> bytes:
     if file_path == '/dev/null':
         return b''
     try:
-        return Path(file_path).read_bytes()
+        if Path(file_path).stat().st_size > MAX_INPUT_BYTES:
+            raise DiffLimitError("Git operand '{}' exceeds the 4 MiB input limit".format(file_path))
+        with open(file_path, 'rb') as stream:
+            data = stream.read(MAX_INPUT_BYTES + 1)
+        if len(data) > MAX_INPUT_BYTES:
+            raise DiffLimitError("Git operand '{}' exceeds the 4 MiB input limit".format(file_path))
+        return data
     except OSError as error:
         raise LinediffInputError(
             "Cannot read Git operand '{}': {}".format(file_path, error.strerror or error)
@@ -39,7 +50,10 @@ def read_git_bytes(file_path: str) -> bytes:
 
 def read_stdin_content() -> str:
     try:
-        content = sys.stdin.buffer.read().decode('utf-8')
+        raw = sys.stdin.buffer.read(MAX_INPUT_BYTES * 2 + 1)
+        if len(raw) > MAX_INPUT_BYTES * 2:
+            raise DiffLimitError("Stdin exceeds the 8 MiB pair input limit")
+        content = raw.decode('utf-8')
     except UnicodeDecodeError as error:
         raise LinediffInputError("Cannot decode stdin as UTF-8") from error
     except OSError as error:
