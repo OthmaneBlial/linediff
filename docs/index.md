@@ -13,6 +13,7 @@ Linediff compares UTF-8 text in a terminal and can add a Python definition summa
 - [Dependency checks](DEPENDENCIES.md)
 - [Test evidence and branch coverage](QUALITY.md)
 - [Development comparison with Git, Difftastic and delta](COMPARISON.md)
+- [Protocol for five consented distribution trials](FEEDBACK_TRIAL.md)
 - [Developer API](api.md)
 - [FAQ](faq.md)
 - [Contribution guide](../CONTRIBUTING.md)
