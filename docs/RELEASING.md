@@ -1,6 +1,6 @@
 # Release preparation
 
-No new release is implied by a green CI run or an Actions artifact. The tags through `v0.1.3` predate the current development code. Public PyPI and GitHub release publication require a separate maintainer decision and subsequent verification.
+No new release is implied by a green CI run or an Actions artifact. The tags through `v0.1.3` predate the current development code. Public PyPI and GitHub release publication require a separate maintainer decision and subsequent verification. The old `.env.example` requesting a PyPI token was removed because the candidate script does not read credentials or upload anything.
 
 ## Prepare a candidate
 
