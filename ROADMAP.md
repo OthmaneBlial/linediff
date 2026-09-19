@@ -188,6 +188,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 4.3 Sécuriser les entrées et la chaîne de dépendances (P1)
 
+- [ ] **En cours (19 septembre 2026).** La CLI refuse les contrôles de terminal et caractères bidi dans le texte et les labels; le mode Git réduit le contenu dangereux à un statut sans l'afficher. Des tests couvrent fichiers, stdin, labels Git et le cas binaire NUL. Politique de signalement ajoutée dans `SECURITY.md`. L'audit de dépendances et de secrets en CI, les symlinks et le processus de publication restent à traiter.
+
 - **Objectif :** réduire les surprises pour un outil qui lit des fichiers arbitraires et un script qui publie des artefacts.
 - **Changements :** auditer exceptions de fichiers, symlinks, décodage, profondeur AST, sorties de terminal et contenu Git non fiable; ne pas exécuter le contenu comparé; auditer dépendances et grammaires, figer une stratégie de mise à jour, documenter signalement de vulnérabilité; ne jamais charger des secrets dans les jobs de PR.
 - **Fichiers :** `src/linediff/`, `pyproject.toml`, `.github/workflows/`, nouveau `SECURITY.md`, `scripts/release-kit.sh`.
@@ -221,7 +223,7 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 5.3 Créer des preuves visuelles et un dépôt accueillant
 
-- [ ] **En cours (19 septembre 2026).** Guide de contribution unifié, modèles d'issue/PR, `SECURITY.md`, `SUPPORT.md` et projet de métadonnées dans `docs/GITHUB_PRESENTATION.md` créés. Le README a été inspecté dans son rendu GitHub : il s'affiche correctement, mais la description About distante conserve une promesse ancienne. Capture terminal fidèle, revue mobile, essai du guide dans un clone propre et mise à jour autorisée des métadonnées restent à faire.
+- [ ] **En cours (19 septembre 2026).** Guide de contribution unifié, modèles d'issue/PR, `SECURITY.md`, `SUPPORT.md` et projet de métadonnées dans `docs/GITHUB_PRESENTATION.md` créés. Le guide a été essayé dans un clone propre avec une installation `.[dev]`, tests, Ruff et liens locaux verts. Le README a été inspecté dans son rendu GitHub : il s'affiche correctement, mais la description About distante conserve une promesse ancienne. Capture terminal fidèle, revue mobile et mise à jour autorisée des métadonnées restent à faire.
 
 - **Objectif :** rendre la valeur compréhensible en quelques secondes et faciliter une première contribution.
 - **Changements :** capturer de vrais terminaux pour le cas Python et la comparaison Git, fournir image/GIF seulement si lisible et légère, texte alternatif et transcription; simplifier `CONTRIBUTING.md` et `docs/contributing.md`, ajouter templates d'issue/PR, catégories « good first issue », politique de support et métadonnées GitHub pertinentes; éviter badges de téléchargements/performance sans vérification.

@@ -146,6 +146,73 @@ class GitIntegrationTests(unittest.TestCase):
         self.assertEqual(check.returncode, 1)
         self.assertEqual(check.stdout, b"")
 
+    def test_git_unsafe_text_uses_status_without_terminal_control(self):
+        old = self.repository / "unsafe-old.txt"
+        new = self.repository / "unsafe-new.txt"
+        old.write_bytes(b"before\n")
+        new.write_bytes(b"after\x1b[2J\n")
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "linediff",
+                "sample.txt",
+                str(old),
+                "oldhex",
+                "100644",
+                str(new),
+                "newhex",
+                "100644",
+            ],
+            cwd=self.repository,
+            capture_output=True,
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(
+            result.stdout.strip(), b"Terminal-unsafe text differs: sample.txt"
+        )
+        self.assertNotIn(b"\x1b", result.stdout)
+
+        old.write_bytes(new.read_bytes())
+        identical = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "linediff",
+                "sample.txt",
+                str(old),
+                "oldhex",
+                "100644",
+                str(new),
+                "newhex",
+                "100644",
+            ],
+            cwd=self.repository,
+            capture_output=True,
+        )
+        self.assertEqual(identical.returncode, 0)
+        self.assertEqual(identical.stdout, b"")
+
+        bad_mode = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "linediff",
+                "sample.txt",
+                str(old),
+                "oldhex",
+                "100644\x1b[2J",
+                str(new),
+                "newhex",
+                "100644",
+            ],
+            cwd=self.repository,
+            capture_output=True,
+        )
+        self.assertEqual(bad_mode.returncode, 2)
+        self.assertEqual(bad_mode.stdout, b"")
+        self.assertNotIn(b"\x1b", bad_mode.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

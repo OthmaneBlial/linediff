@@ -79,6 +79,25 @@ class CliContractTests(unittest.TestCase):
             self.assertEqual(result.returncode, 2)
             self.assertIn(b"Binary", result.stderr)
 
+    def test_terminal_controls_are_rejected_without_echoing_them(self):
+        with tempfile.TemporaryDirectory() as directory:
+            unsafe = Path(directory, "unsafe.txt")
+            safe = Path(directory, "safe.txt")
+            unsafe.write_bytes(b"hello\x1b[2J\n")
+            safe.write_text("hello\n", encoding="utf-8")
+            result = run_cli(str(unsafe), str(safe))
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(result.stdout, b"")
+            self.assertIn(b"U+001B", result.stderr)
+            self.assertNotIn(b"\x1b", result.stderr)
+            bidi = run_cli("unsafe\u202e.txt", str(safe))
+            self.assertEqual(bidi.returncode, 2)
+            self.assertIn(b"U+202E", bidi.stderr)
+            self.assertNotIn("\u202e".encode("utf-8"), bidi.stderr)
+            stdin = run_cli(input_bytes=b"old\n---\nnew\x1b[2J")
+            self.assertEqual(stdin.returncode, 2)
+            self.assertIn(b"U+001B", stdin.stderr)
+
     def test_stdin_pair_preserves_final_newline_and_crlf(self):
         for pair in (b"alpha\n---\nalpha", b"alpha\r\n---\r\nalpha\n"):
             with self.subTest(pair=pair):

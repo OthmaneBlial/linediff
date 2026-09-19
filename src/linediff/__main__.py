@@ -12,6 +12,8 @@ from .inputs import (
     read_file_content,
     read_git_bytes,
     read_stdin_content,
+    unsafe_character,
+    validate_label,
     parse_pair_stdin,
 )
 from .languages import KNOWN_LANGUAGES, detect_language
@@ -76,6 +78,7 @@ def main() -> int:
     modes_differ = False
     names_differ = False
     binary_git_diff = False
+    unsafe_git_diff = False
     try:
         if git_mode:
             # Git adds new-path and metadata for renames/copies (nine arguments).
@@ -85,6 +88,10 @@ def main() -> int:
             new_path = git_path
             if len(args.files) == 9:
                 new_path = args.files[7]
+            validate_label(git_path)
+            validate_label(new_path)
+            validate_label(old_mode)
+            validate_label(new_mode)
             names_differ = git_path != new_path
             fromfile = "/dev/null" if old_mode == "." else "a/" + git_path
             tofile = "/dev/null" if new_mode == "." else "b/" + new_path
@@ -116,10 +123,18 @@ def main() -> int:
             except UnicodeDecodeError:
                 binary_git_diff = True
             else:
-                binary_git_diff = "\x00" in content1 or "\x00" in content2
+                has_nul = "\x00" in content1 or "\x00" in content2
+                unsafe_git_diff = not has_nul and (
+                    unsafe_character(content1) is not None
+                    or unsafe_character(content2) is not None
+                )
+                binary_git_diff = has_nul or unsafe_git_diff
             if binary_git_diff:
                 if args.diagnostics:
-                    print("Diagnostic: route=binary-git-status", file=sys.stderr)
+                    route = (
+                        "unsafe-git-status" if unsafe_git_diff else "binary-git-status"
+                    )
+                    print("Diagnostic: route={}".format(route), file=sys.stderr)
                 if args.check_only:
                     return (
                         0
@@ -128,6 +143,8 @@ def main() -> int:
                         and not names_differ
                         else 1
                     )
+                if old_bytes == new_bytes and not modes_differ and not names_differ:
+                    return 0
                 if old_bytes == new_bytes and names_differ:
                     print(
                         "Renamed binary file: {} -> {}".format(git_path, new_path),
@@ -141,7 +158,12 @@ def main() -> int:
                         flush=True,
                     )
                 else:
-                    print("Binary files differ: {}".format(git_path), flush=True)
+                    status = (
+                        "Terminal-unsafe text differs"
+                        if unsafe_git_diff
+                        else "Binary files differ"
+                    )
+                    print("{}: {}".format(status, git_path), flush=True)
                 return 0
         elif len(args.files) == 2:
             fromfile, tofile = args.files

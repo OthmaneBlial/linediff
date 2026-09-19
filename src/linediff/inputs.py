@@ -2,6 +2,7 @@
 
 import re
 import sys
+import unicodedata
 from pathlib import Path
 from typing import Tuple
 from .limits import MAX_INPUT_BYTES, DiffLimitError
@@ -11,7 +12,42 @@ class LinediffInputError(Exception):
     """An input cannot be compared as UTF-8 text."""
 
 
+BIDI_CONTROLS = {
+    "\u061c",
+    "\u200e",
+    "\u200f",
+    *map(chr, range(0x202A, 0x202F)),
+    *map(chr, range(0x2066, 0x206A)),
+}
+
+
+def unsafe_character(content: str, path: bool = False):
+    """Return the first control that could spoof terminal output."""
+    for index, char in enumerate(content):
+        if char in BIDI_CONTROLS:
+            return "U+{:04X}".format(ord(char))
+        if unicodedata.category(char) == "Cc":
+            if not path and (
+                char in "\n\t"
+                or char == "\r"
+                and index + 1 < len(content)
+                and content[index + 1] == "\n"
+            ):
+                continue
+            return "U+{:04X}".format(ord(char))
+    return None
+
+
+def validate_label(label: str) -> None:
+    unsafe = unsafe_character(label, path=True)
+    if unsafe:
+        raise LinediffInputError(
+            "File path contains terminal control {}".format(unsafe)
+        )
+
+
 def read_file_content(file_path: str) -> str:
+    validate_label(file_path)
     try:
         if Path(file_path).stat().st_size > MAX_INPUT_BYTES:
             raise DiffLimitError("'{}' exceeds the 4 MiB input limit".format(file_path))
@@ -31,6 +67,11 @@ def read_file_content(file_path: str) -> str:
         raise LinediffInputError(
             "Binary file '{}' contains NUL bytes".format(file_path)
         )
+    unsafe = unsafe_character(content)
+    if unsafe:
+        raise LinediffInputError(
+            "Text file contains terminal control {}".format(unsafe)
+        )
     return content
 
 
@@ -38,6 +79,7 @@ def read_git_bytes(file_path: str) -> bytes:
     """Read a Git external-diff operand, including its null-file sentinel."""
     if file_path == "/dev/null":
         return b""
+    validate_label(file_path)
     try:
         if Path(file_path).stat().st_size > MAX_INPUT_BYTES:
             raise DiffLimitError(
@@ -70,6 +112,9 @@ def read_stdin_content() -> str:
         raise LinediffInputError("Cannot read stdin: {}".format(error)) from error
     if "\x00" in content:
         raise LinediffInputError("Binary stdin contains NUL bytes")
+    unsafe = unsafe_character(content)
+    if unsafe:
+        raise LinediffInputError("Stdin contains terminal control {}".format(unsafe))
     return content
 
 
