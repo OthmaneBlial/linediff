@@ -1,2 +1,3 @@
 tests/fixtures/crlf.old.txt -text -whitespace
 tests/fixtures/*.bin binary
+data/move_*.py text eol=lf

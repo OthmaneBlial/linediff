@@ -1,5 +1,7 @@
 # Terminal capture provenance
 
+The two source fixtures in `data/move_*.py` are forced to LF on checkout so the recorded output remains reproducible on Git for Windows.
+
 The [README image](../assets/terminal-structural-dark.svg) and its [light variant](../assets/terminal-structural-light.svg) are still frames rendered from the same real terminal recording: [`assets/casts/structural-output.cast`](../assets/casts/structural-output.cast). They show the output of this command run from the checkout after the base installation:
 
 ```bash

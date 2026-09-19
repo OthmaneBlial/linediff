@@ -12,6 +12,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 class TerminalCaptureTests(unittest.TestCase):
     def test_casts_match_installed_cli(self):
+        for name in ("move_a.py", "move_b.py"):
+            self.assertNotIn(b"\r", (ROOT / "data" / name).read_bytes())
         cases = (
             ("structural", ("--display", "structural"), (60, 18)),
             (
