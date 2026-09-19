@@ -1,0 +1,3 @@
+final_newline.new.txt --- Text
+No changes.
+

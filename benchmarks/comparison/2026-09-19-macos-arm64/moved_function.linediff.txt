@@ -1,0 +1,15 @@
+Structural view (human-readable; not an applicable patch)
+MOVED calculate_total [old lines 1-2; new lines 4-5]
+
+Exact text diff:
+--- moved_function.old.py
++++ moved_function.new.py
+@@ -1,5 +1,5 @@
++def keep():
++    pass
++
+ def calculate_total(x):
+     return x
+-
+-def keep():
+-    pass

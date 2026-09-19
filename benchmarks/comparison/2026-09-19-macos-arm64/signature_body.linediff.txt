@@ -1,0 +1,11 @@
+Structural view (human-readable; not an applicable patch)
+CHANGED calculate_total (signature, body) [old lines 1-2; new lines 1-2]
+
+Exact text diff:
+--- signature_body.old.py
++++ signature_body.new.py
+@@ -1,2 +1,2 @@
+-def calculate_total(items):
+-    return sum(items)
++def calculate_total(items, tax_rate=0.08):
++    return sum(items) * (1 + tax_rate)

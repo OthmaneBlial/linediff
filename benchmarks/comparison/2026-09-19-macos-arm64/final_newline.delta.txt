@@ -1,0 +1,10 @@
+
+final_newline.old.txt ⟶   final_newline.new.txt
+────────────────────────────────────────────────────────────────────────────────
+
+───┐
+1: │
+───┘
+alpha
+\ No newline at end of file
+alpha

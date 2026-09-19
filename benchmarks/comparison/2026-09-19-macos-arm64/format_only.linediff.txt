@@ -1,0 +1,10 @@
+Structural view (human-readable; not an applicable patch)
+No indexed Python definition changed; see the text diff below.
+
+Exact text diff:
+--- format_only.old.py
++++ format_only.new.py
+@@ -1,2 +1,2 @@
+ def run():
+-    return (1 + 2)
++    return 1+2

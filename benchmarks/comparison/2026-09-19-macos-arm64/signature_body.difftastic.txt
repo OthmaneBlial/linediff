@@ -1,0 +1,6 @@
+signature_body.new.py --- Python
+1    def calculate_total(items):
+2        return sum(items)
+   1 def calculate_total(items, tax_rate=0.08):
+   2     return sum(items) * (1 + tax_rate)
+

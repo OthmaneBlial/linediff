@@ -121,5 +121,6 @@ dmypy.json
 
 # Project-specific
 .benchmarks/
-benchmarks/
+benchmarks/*
+!benchmarks/comparison/
 src/linediff.egg-info/

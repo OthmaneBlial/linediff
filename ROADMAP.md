@@ -269,6 +269,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 7.1 Établir une comparaison concurrentielle honnête
 
+- [ ] **Préparé localement (19 septembre 2026).** `docs/COMPARISON.md`, `scripts/compare_tools.py` et les sorties brutes datées fixent Git, Difftastic 0.71.0 et delta 0.19.2 sur quatre fixtures du dépôt. Les deux archives concurrentes ont été contrôlées contre les SHA-256 de leurs releases. La comparaison décrit aussi les faiblesses de Linediff et l'ambiguïté d'un déplacement; les temps mesurés sont limités à une machine. Elle doit être rafraîchie sur une distribution Linediff réellement publiée après 6.3 avant de cocher cette phase.
+
 - **Objectif :** montrer où Linediff aide réellement et où un autre outil convient mieux.
 - **Changements :** sélectionner au moment de la phase un outil ligne (`git diff`), un outil syntaxique et une visionneuse; figer versions/commandes/corpus; comparer précision, lisibilité, vitesse et limites sur les mêmes cas; publier les sorties brutes et expliquer les écarts sans revendiquer une supériorité générale.
 - **Fichiers :** nouveaux `docs/COMPARISON.md`, `benchmarks/`, `README.md`.

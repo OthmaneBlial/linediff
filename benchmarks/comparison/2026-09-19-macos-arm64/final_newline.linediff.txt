@@ -1,0 +1,10 @@
+Structural view (human-readable; not an applicable patch)
+Text fallback: no verified structural view for 'text'
+
+Exact text diff:
+--- final_newline.old.txt
++++ final_newline.new.txt
+@@ -1 +1 @@
+-alpha
+\ No newline at end of file
++alpha

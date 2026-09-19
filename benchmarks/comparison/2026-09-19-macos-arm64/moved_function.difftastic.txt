@@ -1,0 +1,6 @@
+moved_function.new.py --- Python
+4    def keep():
+5        pass
+   1 def keep():
+   2     pass
+

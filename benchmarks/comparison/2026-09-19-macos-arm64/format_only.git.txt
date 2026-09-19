@@ -1,0 +1,8 @@
+diff --git a/format_only.old.py b/format_only.new.py
+index fd62fe3..1a12858 100644
+--- a/format_only.old.py
++++ b/format_only.new.py
+@@ -1,2 +1,2 @@
+ def run():
+-    return (1 + 2)
++    return 1+2

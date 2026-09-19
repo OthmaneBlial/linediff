@@ -1,0 +1,11 @@
+
+signature_body.old.py ⟶   signature_body.new.py
+────────────────────────────────────────────────────────────────────────────────
+
+───┐
+1: │
+───┘
+def calculate_total(items):
+    return sum(items)
+def calculate_total(items, tax_rate=0.08):
+    return sum(items) * (1 + tax_rate)

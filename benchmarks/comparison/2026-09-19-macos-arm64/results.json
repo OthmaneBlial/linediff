@@ -1,0 +1,147 @@
+{
+  "date": "2026-09-19",
+  "revision": "3bd793b",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "python": "3.14.6",
+  "repeats": 5,
+  "versions": {
+    "git": "git version 2.50.1 (Apple Git-155)",
+    "linediff": "0.2.0a1",
+    "difftastic": "Difftastic 0.71.0",
+    "delta": "delta 0.19.2"
+  },
+  "cases": [
+    {
+      "id": "moved_function",
+      "inputs": {
+        "moved_function.old.py": "79e0f236ae7dd7f0653a6679567dc96a996f12ee54bf3f63bb7a85463b326c46",
+        "moved_function.new.py": "c7d2db71c81231e6dcf95b56cf170c762c20dc054f8a6e957b84afc4658c8f7c"
+      },
+      "tools": {
+        "git": {
+          "exit_code": 1,
+          "median_wall_ms": 25.765,
+          "output": "moved_function.git.txt",
+          "stderr": ""
+        },
+        "linediff": {
+          "exit_code": 0,
+          "median_wall_ms": 153.884,
+          "output": "moved_function.linediff.txt",
+          "stderr": ""
+        },
+        "difftastic": {
+          "exit_code": 0,
+          "median_wall_ms": 45.627,
+          "output": "moved_function.difftastic.txt",
+          "stderr": ""
+        },
+        "delta": {
+          "exit_code": 1,
+          "median_wall_ms": 64.99,
+          "output": "moved_function.delta.txt",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "id": "signature_body",
+      "inputs": {
+        "signature_body.old.py": "686733167c7a29f544b7de7b6fb75267dd3538e13254de9e3c49c419c9067e80",
+        "signature_body.new.py": "56ef549b4df7c4999f4557cdd74c47b840793b1d1f6683e4acd1b4b895bb5253"
+      },
+      "tools": {
+        "git": {
+          "exit_code": 1,
+          "median_wall_ms": 21.71,
+          "output": "signature_body.git.txt",
+          "stderr": ""
+        },
+        "linediff": {
+          "exit_code": 0,
+          "median_wall_ms": 82.623,
+          "output": "signature_body.linediff.txt",
+          "stderr": ""
+        },
+        "difftastic": {
+          "exit_code": 0,
+          "median_wall_ms": 31.918,
+          "output": "signature_body.difftastic.txt",
+          "stderr": ""
+        },
+        "delta": {
+          "exit_code": 1,
+          "median_wall_ms": 56.552,
+          "output": "signature_body.delta.txt",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "id": "format_only",
+      "inputs": {
+        "format_only.old.py": "c93529abb856e82c73093492e0b490f32b2bc008c098da578c098bc89be67c3b",
+        "format_only.new.py": "2bfa634acebaf8d449fa9bee9918eef03410bf3b2af8a15b500127ea2b9841c1"
+      },
+      "tools": {
+        "git": {
+          "exit_code": 1,
+          "median_wall_ms": 22.429,
+          "output": "format_only.git.txt",
+          "stderr": ""
+        },
+        "linediff": {
+          "exit_code": 0,
+          "median_wall_ms": 82.662,
+          "output": "format_only.linediff.txt",
+          "stderr": ""
+        },
+        "difftastic": {
+          "exit_code": 0,
+          "median_wall_ms": 33.132,
+          "output": "format_only.difftastic.txt",
+          "stderr": ""
+        },
+        "delta": {
+          "exit_code": 1,
+          "median_wall_ms": 71.647,
+          "output": "format_only.delta.txt",
+          "stderr": ""
+        }
+      }
+    },
+    {
+      "id": "final_newline",
+      "inputs": {
+        "final_newline.old.txt": "8ed3f6ad685b959ead7022518e1af76cd816f8e8ec7ccdda1ed4018e8f2223f8",
+        "final_newline.new.txt": "b6a98d9ce9a2d9149288fa3df42d377c3e42737afdcdaf714e33c0a100b51060"
+      },
+      "tools": {
+        "git": {
+          "exit_code": 1,
+          "median_wall_ms": 43.528,
+          "output": "final_newline.git.txt",
+          "stderr": ""
+        },
+        "linediff": {
+          "exit_code": 0,
+          "median_wall_ms": 108.708,
+          "output": "final_newline.linediff.txt",
+          "stderr": ""
+        },
+        "difftastic": {
+          "exit_code": 0,
+          "median_wall_ms": 44.691,
+          "output": "final_newline.difftastic.txt",
+          "stderr": ""
+        },
+        "delta": {
+          "exit_code": 1,
+          "median_wall_ms": 94.908,
+          "output": "final_newline.delta.txt",
+          "stderr": ""
+        }
+      }
+    }
+  ]
+}

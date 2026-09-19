@@ -75,6 +75,8 @@ For a Python definition summary during a one-shot Git review, use `git -c 'diff.
 
 Each text operand is capped at 4 MiB, 20,000 lines, and 200,000 characters per line. Expensive line alignment becomes an exact whole-file replacement patch; Python structural analysis has tighter limits. See [limits](docs/LIMITS.md) and the [parser support matrix](docs/PARSER_SUPPORT.md). No general speed advantage over Git or another diff tool has been measured.
 
+A dated [development comparison](docs/COMPARISON.md) includes the raw output of Git, Difftastic, delta and Linediff on four shared fixtures. It shows where Linediff's named Python summary helps, where movement is ambiguous, and where the other tools are stronger.
+
 ## Develop and contribute
 
 ```bash
