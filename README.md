@@ -58,6 +58,12 @@ git -c diff.external=linediff diff --cached --ext-diff
 
 Git invokes Linediff with its external-diff arguments. Added, deleted, changed, and renamed text files have been exercised in a temporary Git repository; binary changes get a status line. Native `git diff --no-ext-diff` remains the reference for Git's full patch and filters. See [usage](docs/usage.md) for stdin pairs and Git line-ending limits.
 
+For a Python definition summary during a one-shot Git review, use `git -c 'diff.external=linediff --display structural' diff --ext-diff`. This real Git output comes from a temporary repository containing the public `data/move_*.py` fixtures:
+
+![Real git diff --ext-diff output showing a moved Python function and the exact text diff](assets/terminal-git-dark.svg)
+
+[Light-background Git capture](assets/terminal-git-light.svg) · [Git capture provenance](docs/DEMO_ASSETS.md)
+
 ## What is supported
 
 | Input | Current behavior |
