@@ -1,14 +1,14 @@
 import subprocess
+import sys
 import os
 import tempfile
 import pytest
 
-DIFF_BINARY = ['python3', '-m', 'linediff']
+DIFF_BINARY = [sys.executable, '-m', 'linediff']
 
 def run_difft(file1, file2, *args):
     cmd = DIFF_BINARY + list(args) + [file1, file2]
     env = os.environ.copy()
-    env['PYTHONPATH'] = os.path.join(os.path.dirname(__file__), '..', 'src')
     env['COVERAGE_PROCESS_START'] = os.path.join(os.path.dirname(__file__), '..', 'pyproject.toml')
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     return result.returncode, result.stdout, result.stderr
@@ -18,8 +18,8 @@ def run_difft(file1, file2, *args):
     "php", "ruby", "scala", "swift", "typescript", "kotlin", "dart", "lua", "perl", "haskell",
     "elixir", "clojure", "erlang", "r", "matlab", "shell", "yaml", "xml", "toml"
 ])
-def test_language_support(lang):
-    """Test support for various programming languages."""
+def test_text_diff_for_file_extensions(lang):
+    """Any UTF-8 extension can receive an exact text diff; this is not parser support."""
     # Sample contents for each language
     contents = {
         "javascript": ("function foo() { return 1; }", "function foo() { return 2; }"),
@@ -60,8 +60,11 @@ def test_language_support(lang):
         f2.write(content2)
         f2_path = f2.name
     try:
-        code, stdout, stderr = run_difft(f1_path, f2_path)
-        assert code in [0, 1]  # 0 or 1
+        code, stdout, stderr = run_difft(f1_path, f2_path, '--diagnostics')
+        assert code == 0
+        assert '-' + content1.splitlines()[-1] in stdout
+        assert '+' + content2.splitlines()[-1] in stdout
+        assert 'route=exact-text' in stderr
     finally:
         os.unlink(f1_path)
         os.unlink(f2_path)
@@ -76,8 +79,12 @@ def test_unsupported_language():
         f2.write("different content\n")
         f2_path = f2.name
     try:
-        code, stdout, stderr = run_difft(f1_path, f2_path)
-        assert code in [0, 1]  # 0 or 1
+        code, stdout, stderr = run_difft(f1_path, f2_path, '--diagnostics', '--display', 'structural')
+        assert code == 0
+        assert "Text fallback: no verified structural view for 'text'" in stdout
+        assert '-unknown content' in stdout
+        assert '+different content' in stdout
+        assert 'route=text-fallback' in stderr
     finally:
         os.unlink(f1_path)
         os.unlink(f2_path)

@@ -1,19 +1,19 @@
 import subprocess
+import sys
 import os
 import tempfile
 import pytest
 
-DIFF_BINARY = ['python3', '-m', 'linediff']
+DIFF_BINARY = [sys.executable, '-m', 'linediff']
 
 def run_difft(file1, file2, *args):
     cmd = DIFF_BINARY + list(args) + [file1, file2]
     env = os.environ.copy()
-    env['PYTHONPATH'] = os.path.join(os.path.dirname(__file__), '..', 'src')
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     return result.returncode, result.stdout, result.stderr
 
-def test_tree_sitter_integration_javascript():
-    """Test parsing with JavaScript files."""
+def test_javascript_uses_exact_text_diff():
+    """The CLI does not imply structural JavaScript support."""
     content1 = "function foo() { return 1; }"
     content2 = "function bar() { return 2; }"
     with tempfile.NamedTemporaryFile(mode='w', suffix='.js', delete=False) as f1:
@@ -26,13 +26,14 @@ def test_tree_sitter_integration_javascript():
         code, stdout, stderr = run_difft(f1_path, f2_path)
         assert code == 0
         # Should produce output
-        assert len(stdout) > 0
+        assert '-function foo() { return 1; }' in stdout
+        assert '+function bar() { return 2; }' in stdout
     finally:
         os.unlink(f1_path)
         os.unlink(f2_path)
 
-def test_tree_sitter_integration_python():
-    """Test parsing with Python files."""
+def test_python_default_uses_exact_text_diff():
+    """The default route remains an applicable text diff."""
     content1 = "def foo():\n    return 1"
     content2 = "def bar():\n    return 2"
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f1:
@@ -45,13 +46,14 @@ def test_tree_sitter_integration_python():
         code, stdout, stderr = run_difft(f1_path, f2_path)
         assert code == 0
         # Should produce output
-        assert len(stdout) > 0
+        assert '-def foo():' in stdout
+        assert '+def bar():' in stdout
     finally:
         os.unlink(f1_path)
         os.unlink(f2_path)
 
-def test_tree_sitter_integration_json():
-    """Test parsing with JSON files."""
+def test_json_uses_exact_text_diff():
+    """Installed grammars do not silently change the CLI route."""
     content1 = '{"key": "value1"}'
     content2 = '{"key": "value2"}'
     with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f1:
@@ -64,13 +66,14 @@ def test_tree_sitter_integration_json():
         code, stdout, stderr = run_difft(f1_path, f2_path)
         assert code == 0
         # Should produce output
-        assert len(stdout) > 0
+        assert '-{"key": "value1"}' in stdout
+        assert '+{"key": "value2"}' in stdout
     finally:
         os.unlink(f1_path)
         os.unlink(f2_path)
 
-def test_fallback_parsing():
-    """Test parsing with malformed files."""
+def test_malformed_javascript_still_has_text_diff():
+    """Malformed JavaScript is compared as text."""
     content1 = "function foo() { return 1; "  # Missing closing brace
     content2 = "function bar() { return 2; }"
     with tempfile.NamedTemporaryFile(mode='w', suffix='.js', delete=False) as f1:
@@ -81,8 +84,9 @@ def test_fallback_parsing():
         f2_path = f2.name
     try:
         code, stdout, stderr = run_difft(f1_path, f2_path)
-        # Should still produce output even with syntax errors
-        assert code == 0 or code == 1  # 1 might indicate differences
+        assert code == 0
+        assert '-function foo() { return 1; ' in stdout
+        assert '+function bar() { return 2; }' in stdout
     finally:
         os.unlink(f1_path)
         os.unlink(f2_path)

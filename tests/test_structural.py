@@ -21,7 +21,6 @@ def fixture(case_id, side):
 def cli(*arguments):
     env = os.environ.copy()
     env["PYTHONDONTWRITEBYTECODE"] = "1"
-    env["PYTHONPATH"] = str(ROOT / "src")
     return subprocess.run(
         [sys.executable, "-m", "linediff"] + list(arguments),
         cwd=ROOT,

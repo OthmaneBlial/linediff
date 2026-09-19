@@ -166,6 +166,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 4.1 Transformer la suite en garde-fou d'exactitude (P0)
 
+- [ ] **En cours (19 septembre 2026).** Assertions permissives sur codes de sortie, langues, entrées invalides et sorties non vides remplacées par oracles ciblés; les sous-processus de test utilisent l'interpréteur du paquet installé sans `PYTHONPATH` manuel. Suite complète verte sur macOS; mesure `pytest-cov` locale à 74 % globale mais seulement 43 % pour `__main__` car les sous-processus CLI ne sont pas agrégés. Mutation ciblée et couverture de branches critiques restent à produire.
+
 - **Objectif :** empêcher qu'une CI verte masque la perte de données ou l'absence de diff syntaxique.
 - **Changements :** remplacer les assertions permissives (`code in [0,1]`, sortie simplement non vide) par des oracles précis; séparer tests unitaires, CLI, Git réel, parseurs optionnels et packaging; mesurer la couverture des branches critiques plutôt que viser un pourcentage global seul.
 - **Fichiers :** `tests/`, `pyproject.toml`, fixtures de la phase 0.

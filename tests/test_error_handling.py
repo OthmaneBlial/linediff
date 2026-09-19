@@ -1,14 +1,14 @@
 import subprocess
+import sys
 import tempfile
 import os
 import pytest
 
-DIFF_BINARY = ['python3', '-m', 'linediff']
+DIFF_BINARY = [sys.executable, '-m', 'linediff']
 
 def run_difft(*args):
     cmd = DIFF_BINARY + list(args)
     env = os.environ.copy()
-    env['PYTHONPATH'] = os.path.join(os.path.dirname(__file__), '..', 'src')
     env['COVERAGE_PROCESS_START'] = os.path.join(os.path.dirname(__file__), '..', 'pyproject.toml')
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     return result.returncode, result.stdout, result.stderr
@@ -41,9 +41,12 @@ def test_one_file_provided():
 def test_directory_as_file():
     """Test trying to diff directories."""
     code, stdout, stderr = run_difft('/tmp', '/var')
-    # Might work or fail depending on implementation
-    assert code in [0, 1, 2]  # Allow various exit codes
+    assert code == 2
+    assert stdout == ''
+    assert 'Cannot read' in stderr
 
+@pytest.mark.skipif(os.name == 'nt' or hasattr(os, 'geteuid') and os.geteuid() == 0,
+                    reason='POSIX permission behavior requires a non-root user')
 def test_permission_denied():
     """Test with files that have no read permission."""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
@@ -53,8 +56,9 @@ def test_permission_denied():
     try:
         os.chmod(f_path, 0o000)  # No permissions
         code, stdout, stderr = run_difft(f_path, f_path)
-        assert code != 0
-        assert "permission" in stderr.lower() or "error" in stderr.lower()
+        assert code == 2
+        assert stdout == ''
+        assert "permission" in stderr.lower()
     finally:
         os.chmod(f_path, 0o644)  # Restore permissions
         os.unlink(f_path)
@@ -86,7 +90,9 @@ def test_extremely_long_lines():
     try:
         code, stdout, stderr = run_difft(f1_path, f2_path)
         assert code == 0
-        # Should handle without crashing
+        assert '-' + long_line in stdout
+        assert '+' + long_line + 'b' in stdout
+        assert stderr == ''
     finally:
         os.unlink(f1_path)
         os.unlink(f2_path)
@@ -103,6 +109,8 @@ def test_many_small_files():
         # Diff first and last
         code, stdout, stderr = run_difft(files[0], files[-1])
         assert code == 0
+        assert '-content 0' in stdout
+        assert '+content 9' in stdout
     finally:
         for f in files:
             if os.path.exists(f):

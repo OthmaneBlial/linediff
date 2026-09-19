@@ -10,7 +10,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ENV = os.environ.copy()
-ENV["PYTHONPATH"] = str(ROOT / "src")
 ENV["PYTHONDONTWRITEBYTECODE"] = "1"
 
 

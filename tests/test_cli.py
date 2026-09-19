@@ -1,15 +1,15 @@
 import subprocess
+import sys
 import tempfile
 import os
 import shutil
 import pytest
 
-DIFF_BINARY = ['python3', '-m', 'linediff']
+DIFF_BINARY = [sys.executable, '-m', 'linediff']
 
 def run_difft(*args):
     cmd = DIFF_BINARY + list(args)
     env = os.environ.copy()
-    env['PYTHONPATH'] = os.path.join(os.path.dirname(__file__), '..', 'src')
     env['COVERAGE_PROCESS_START'] = os.path.join(os.path.dirname(__file__), '..', 'pyproject.toml')
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     return result.returncode, result.stdout, result.stderr

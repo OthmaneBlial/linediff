@@ -57,7 +57,6 @@ class GitIntegrationTests(unittest.TestCase):
 
     def test_one_shot_external_diff_handles_common_git_changes(self):
         env = os.environ.copy()
-        env["PYTHONPATH"] = str(ROOT / "src")
         env["PYTHONDONTWRITEBYTECODE"] = "1"
         command = shlex.quote(sys.executable) + " -m linediff"
         result = self.git("-c", "diff.external=" + command, "diff", "--cached", "--ext-diff", env=env)
@@ -82,7 +81,6 @@ class GitIntegrationTests(unittest.TestCase):
 
     def test_seven_arguments_are_not_confused_with_two_file_mode(self):
         env = os.environ.copy()
-        env["PYTHONPATH"] = str(ROOT / "src")
         env["PYTHONDONTWRITEBYTECODE"] = "1"
         old = self.repository / "binary.dat"
         new = self.repository / "added.py"

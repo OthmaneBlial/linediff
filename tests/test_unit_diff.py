@@ -1,7 +1,4 @@
 import pytest
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from linediff.diff import compute_diff, parse_to_tree, DiffEngine, Atom, ListNode
 from linediff.parser import parse_to_tree as parser_parse_to_tree
 
@@ -27,8 +24,9 @@ def test_compute_diff_simple():
     left = "line1\nline2\n"
     right = "line1\nmodified\n"
     diff = compute_diff(left, right)
-    assert len(diff) > 0
-    assert any("modified" in line for line in diff)
+    assert diff[2] == '@@ -1,2 +1,2 @@'
+    assert '-line2' in diff
+    assert '+modified' in diff
 
 
 def test_diff_engine_lcs():
@@ -37,7 +35,7 @@ def test_diff_engine_lcs():
     left = ["a", "b", "c"]
     right = ["a", "x", "b", "c"]
     lcs = engine.lcs_linear(left, right)
-    assert len(lcs) == 3  # a, b, c
+    assert lcs == [(0, 0), (1, 2), (2, 3)]
 
 
 def test_atom_dataclass():
@@ -71,8 +69,9 @@ def test_fallback_diff():
     left = ["line1\n", "line2\n"]
     right = ["line1\n", "modified\n"]
     diff = engine.fallback_diff(left, right)
-    assert len(diff) > 0
-    assert "@@" in diff[0] or "---" in diff[0]
+    assert diff[2] == '@@ -1,2 +1,2 @@'
+    assert '-line2' in diff
+    assert '+modified' in diff
 
 
 def test_parser_fallback():
