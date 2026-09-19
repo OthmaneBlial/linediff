@@ -247,6 +247,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 6.2 Livrer d'abord un paquet Python installable, puis des exécutables autonomes
 
+- [ ] **En cours (19 septembre 2026).** Un script PyInstaller 6.22.3 prépare une archive autonome du CLI de base, un checksum SHA-256 et des smoke tests avant/après extraction (`--help`, exactitude, `--check-only`, structure Python, fallback, protocole Git). Un build local macOS arm64 a passé après correction d'un oracle de test. Le workflow candidat prévoit Linux, macOS et Windows, mais ses jobs n'ont pas encore été exécutés; aucune archive n'est publiée. Les grammaires optionnelles ne sont pas embarquées.
+
 - **Objectif :** offrir des téléchargements utiles aux développeurs avec ou sans environnement Python.
 - **Changements :** publier wheel et sdist vérifiés; définir une recette de binaire autonome (par exemple PyInstaller) pour les OS/architectures réellement testés, inclure les grammaires nécessaires ou documenter explicitement le mode texte; créer archives, SHA-256 et instructions de désinstallation; comparer taille, démarrage et comportement au paquet Python.
 - **Fichiers :** `pyproject.toml`, nouveaux scripts de packaging, `.github/workflows/release.yml`, `docs/installation.md`, `README.md`.

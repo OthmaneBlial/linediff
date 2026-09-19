@@ -19,6 +19,10 @@ On Windows, use `py -m venv .venv` and `.venv\Scripts\python -m pip install .`; 
 
 The [quickstart](QUICKSTART.md) shows an exact observed output and the one-shot Git command. The [limits](LIMITS.md) page covers file size and complexity guards.
 
+## Standalone candidate
+
+`scripts/build_standalone.py` can freeze the base CLI with PyInstaller 6.22.3 on the current host. It packages no optional Tree-sitter grammar, so Python structural analysis uses the standard library AST and other languages use the text fallback. A macOS arm64 development archive was built and smoke-tested locally; Linux and Windows archives are configured in the manual candidate workflow but have not yet been observed. No standalone download has been published. The [release guide](RELEASING.md) explains the candidate gate.
+
 ## Optional grammars
 
 Python 3.10 or newer is required by the pinned Tree-sitter extras. Install from this checkout:
