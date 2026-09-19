@@ -1,370 +1,49 @@
-# Examples
+# Reproducible examples
 
-This page provides detailed examples of using Linediff in various scenarios.
+Run these commands from this checkout after following the [installation guide](installation.md). All named files are committed in `tests/fixtures/`. The [quickstart](QUICKSTART.md) pins a complete real output.
 
-## Basic File Comparison
-
-### Python Function Evolution
-
-**Before (old.py):**
-```python
-def calculate_total(items):
-    total = 0
-    for item in items:
-        total += item.price
-    return total
-```
-
-**After (new.py):**
-```python
-def calculate_total(items, tax_rate=0.08):
-    """Calculate total with tax."""
-    subtotal = sum(item.price for item in items)
-    tax = subtotal * tax_rate
-    return subtotal + tax
-```
-
-**Command:**
-```bash
-linediff old.py new.py
-```
-
-**Output:**
-```diff
---- old.py
-+++ new.py
-@@ -1,5 +1,6 @@
--def calculate_total(items):
--    total = 0
--    for item in items:
--        total += item.price
--    return total
-+def calculate_total(items, tax_rate=0.08):
-+    """Calculate total with tax."""
-+    subtotal = sum(item.price for item in items)
-    tax = subtotal * tax_rate
-    return subtotal + tax
-```
-
-## JavaScript Object Changes
-
-**Before (config.js):**
-```javascript
-const config = {
-  apiUrl: "https://api.example.com",
-  timeout: 5000,
-  retries: 3
-};
-```
-
-**After (config.js):**
-```javascript
-const config = {
-  apiUrl: "https://api.example.com",
-  timeout: 10000,
-  retries: 3,
-  headers: {
-    "Authorization": "Bearer token"
-  }
-};
-```
-
-**Command:**
-```bash
-linediff config_old.js config_new.js
-```
-
-**Output:**
-```diff
---- config_old.js
-+++ config_new.js
-@@ -1,5 +1,8 @@
- const config = {
-   apiUrl: "https://api.example.com",
--  timeout: 5000,
-+  timeout: 10000,
-   retries: 3,
-+  headers: {
-+    "Authorization": "Bearer token"
-+  }
- };
-```
-
-## JSON Configuration Updates
-
-**Before (config.json):**
-```json
-{
-  "database": {
-    "host": "localhost",
-    "port": 5432
-  },
-  "features": ["auth", "logging"]
-}
-```
-
-**After (config.json):**
-```json
-{
-  "database": {
-    "host": "prod-db.example.com",
-    "port": 5432,
-    "ssl": true
-  },
-  "features": ["auth", "logging", "metrics"]
-}
-```
-
-**Command:**
-```bash
-linediff config_old.json config_new.json
-```
-
-**Output:**
-```diff
---- config_old.json
-+++ config_new.json
-@@ -1,6 +1,8 @@
- {
-   "database": {
--    "host": "localhost",
-+    "host": "prod-db.example.com",
-     "port": 5432,
-+    "ssl": true
-   },
-   "features": ["auth", "logging", "metrics"]
- }
-```
-
-## Git Integration Examples
-
-### Review Changes in Git
-
-Git invokes Linediff as an external diff command with file arguments. Piping the output of `git diff` into Linediff is unsupported. See the [Git integration guide](usage.md#git-integration) for the current setup and limitations.
-
-### Side-by-Side View
+## Find a moved Python function
 
 ```bash
-# View changes side by side
-linediff --display side-by-side old.py new.py
+.venv/bin/linediff --display structural tests/fixtures/moved_function.old.py tests/fixtures/moved_function.new.py
 ```
 
-### Check-Only Mode for CI/CD
+The fixture has the same two functions in a different order. The view names the moved function and gives old/new lines, then shows the exact text edit. Run `--diagnostics` with the same arguments to see whether AST alone or Tree-sitter plus AST supplied the source ranges.
+
+## Group a signature and body change
 
 ```bash
-# In a CI script
-if linediff --check-only expected_output.py generated.py; then
-    echo "✅ Generated code matches expected output"
-else
-    result=$?
-    if [ "$result" -eq 1 ]; then
-        echo "Generated code differs from expected"
-        exit 1
-    fi
-    echo "Linediff could not compare the files" >&2
-    exit 2
-fi
+.venv/bin/linediff --display structural tests/fixtures/signature_body.old.py tests/fixtures/signature_body.new.py
+.venv/bin/linediff --display side-by-side --width 80 tests/fixtures/signature_body.old.py tests/fixtures/signature_body.new.py
 ```
 
-## Language-Specific Examples
+The structural view reports `CHANGED calculate_total (signature, body)`. The numbered column view marks cropped content with `…`; the unified diff gives the full lines.
 
-### HTML Template Changes
+## Check exact text in a script
 
-**Command:**
 ```bash
-linediff template_old.html template_new.html
+.venv/bin/linediff --check-only tests/fixtures/final_newline.old.txt tests/fixtures/final_newline.new.txt
+result=$?
+echo "$result"
 ```
 
-### CSS Stylesheet Updates
+The result is `1`: only the final newline differs. The general contract is `0` same, `1` different, `2` error. A script must handle `2` separately rather than treating every nonzero status as a difference.
 
-**Command:**
-```bash
-linediff styles_old.css styles_new.css
-```
+## Review a Git repository for one command
 
-### Rust Code Changes
-
-**Command:**
-```bash
-linediff lib_old.rs lib_new.rs
-```
-
-## Advanced Usage Examples
-
-### Override Language Detection
+From a repository containing a change, with `linediff` on `PATH`:
 
 ```bash
-# Force JavaScript parsing for a .txt file
-linediff --language javascript code.txt code2.txt
-```
-
-### Inline Display Mode
-
-```bash
-# Highlighted changes in unified format
-linediff --display inline old.py new.py
-```
-
-### Reading from Standard Input
-
-```bash
-# Create test input
-echo "old content
----
-new content" | linediff
-```
-
-### Git External Diff Setup
-
-```bash
-# Use Linediff for only this Git invocation
 git -c diff.external=linediff diff --ext-diff
 git -c diff.external=linediff diff --cached --ext-diff
 ```
 
-## Real-World Scenarios
+The setting is local to each invocation. Git supplies file operands, not a patch on stdin. The tested integration covers added, deleted, renamed, changed and binary files in a temporary Git repository. [Git limitations](usage.md#git-integration) include checkout line-ending filters.
 
-### Code Review Workflow
-
-```bash
-# Developer workflow
-git checkout -b feature/new-functionality
-# Make changes...
-git -c diff.external=linediff diff --ext-diff
-
-# Reviewer workflow
-git checkout feature/new-functionality
-git -c diff.external=linediff diff --ext-diff main...HEAD
-```
-
-### Automated Testing
+## Compare two texts on stdin
 
 ```bash
-# Test that generated code matches expected
-linediff --check-only tests/expected_output.py generated.py
-
-# Exit code 0 = files identical
-# Exit code 1 = files differ
-# Exit code 2 = input or processing error
+printf 'before\n---\nafter\n' | .venv/bin/linediff
 ```
 
-### Documentation Updates
-
-```bash
-# Check documentation changes
-linediff docs/README_old.md docs/README_new.md
-```
-
-### Configuration Management
-
-```bash
-# Compare environment configurations
-linediff config/dev.json config/prod.json
-
-# Check deployment configuration changes
-linediff k8s/deployment_old.yaml k8s/deployment_new.yaml
-```
-
-## Performance Examples
-
-### Large Files
-
-Linediff automatically handles large files efficiently:
-
-```bash
-# Large Python file (>1000 AST nodes)
-linediff large_old.py large_new.py  # Falls back to line-based diffing
-```
-
-### Multiple Files
-
-```bash
-# Compare multiple files in a loop
-for file in *.py; do
-    if linediff --check-only "$file" "backup/$file"; then
-        continue
-    else
-        result=$?
-        if [ "$result" -eq 1 ]; then
-            echo "$file has changed"
-        else
-            echo "Could not compare $file" >&2
-            exit 2
-        fi
-    fi
-done
-```
-
-## Integration with Other Tools
-
-Integrations with `fzf`, `diff-so-fancy`, and Git aliases need separate tests before commands are recommended here.
-
-## Troubleshooting Examples
-
-### Debug Language Detection
-
-```bash
-# Check what language is detected
-linediff --language python file.txt file2.txt  # Force Python
-```
-
-### Handle Encoding Issues
-
-```bash
-# Linediff handles UTF-8 automatically
-linediff file_with_unicode.py another_file.py
-```
-
-### Large File Optimization
-
-```bash
-# For very large files, Linediff optimizes automatically
-linediff huge_file.py huge_file_v2.py  # Uses line-based fallback
-```
-
-## Custom Scripting
-
-### Python Script Integration
-
-```python
-#!/usr/bin/env python3
-import sys
-from linediff.diff import compute_diff
-
-def compare_files(file1, file2):
-    with open(file1, 'r') as f1, open(file2, 'r') as f2:
-        diff_lines = compute_diff(f1.read(), f2.read(), file1, file2)
-    return diff_lines
-
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python compare.py file1 file2")
-        sys.exit(1)
-
-    diffs = compare_files(sys.argv[1], sys.argv[2])
-    for line in diffs:
-        print(line)
-```
-
-### Shell Script Wrapper
-
-```bash
-#!/bin/bash
-# Wrapper script for Linediff with custom formatting
-
-if [ $# -ne 2 ]; then
-    echo "Usage: $0 file1 file2"
-    exit 1
-fi
-
-echo "=== Linediff Comparison ==="
-echo "Comparing: $1 vs $2"
-echo
-
-linediff "$1" "$2"
-
-echo
-echo "=== End Comparison ==="
-```
-
-These examples demonstrate the versatility of Linediff across different use cases and integration scenarios.
+The separator is Linediff-specific. It does not parse `git diff` output.

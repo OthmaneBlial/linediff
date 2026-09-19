@@ -1,393 +1,83 @@
 # Linediff
 
-> **Development status:** `main` now has exact line diffs and an opt-in Python definition view (`--display structural`), validated locally. Tagged version 0.1.3 predates these fixes. Other languages still use text fallback; a new release has not been verified. See the [product contract](docs/PRODUCT.md) and [roadmap](ROADMAP.md).
+**Review Python changes by function, with an exact line diff always available.**
 
-Start with the [five-minute walkthrough from this checkout](docs/QUICKSTART.md).
+Linediff is a terminal CLI for comparing two UTF-8 files. Its default output is a unified text diff. The opt-in `--display structural` view names changed or moved Python definitions and includes the exact text diff below the summary. The structural view is for reading, not for applying as a patch.
 
-[![PyPI version](https://badge.fury.io/py/linediff.svg)](https://pypi.org/project/linediff/)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![CI](https://github.com/OthmaneBlial/linediff/actions/workflows/ci.yml/badge.svg)](https://github.com/OthmaneBlial/linediff/actions/workflows/ci.yml)
-[![Downloads](https://pepy.tech/badge/linediff)](https://pepy.tech/project/linediff)
+> **Release status:** these changes are on development `main`. The repository has a `v0.1.3` tag, but no GitHub Release for this work has been verified. Install from this checkout to try the behavior described here. See the [roadmap](ROADMAP.md) for release gates.
 
-A lightweight, syntax-aware diff tool for Python with tree-sitter integration. Linediff understands code structure using tree-sitter parsers, providing more meaningful diffs than traditional line-based tools.
+## See it on a real fixture
 
-## Downloads
-
-- Install with PyPI: `pip install linediff`
-- Tracking via [pepy](https://pepy.tech/project/linediff)
-
-## Table of Contents
-
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Git Integration](#git-integration)
-- [Supported Languages](#supported-languages)
-- [Examples](#examples)
-- [How It Works](#how-it-works)
-- [Performance](#performance)
-- [Development](#development)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Features
-
-- **Syntax-aware diffing**: Uses tree-sitter parsers to understand code structure
-- **Multiple display modes**: unified, side-by-side, and inline views
-- **Git integration**: Can be used as external diff tool
-- **Multi-language support**: Python, JavaScript, JSON, HTML, CSS, Rust, Go, Java
-- **Automatic language detection**: Based on file extensions
-- **Robust fallbacks**: Falls back to line-based diffing when needed
-- **Check-only mode**: For CI/CD pipelines (exit code indicates if files differ)
-- **Color output**: ANSI color codes for better readability
-- **Stdin support**: Can read diff input from stdin
-
-## 🚀 Quick Start
-
-### Get Linediff in Seconds
-
-**From PyPI (Easiest Way):**
 ```bash
-pip install linediff
+linediff --display structural tests/fixtures/moved_function.old.py tests/fixtures/moved_function.new.py
 ```
 
-**From Source (For Contributors):**
+The output identifies `MOVED calculate_total [old lines 1-2; new lines 4-5]`, then prints an `Exact text diff:` section with the full unified patch. The [quickstart](docs/QUICKSTART.md) includes the complete output, pinned by a test to the current CLI.
+
+The default view remains a plain patch:
+
+```bash
+linediff tests/fixtures/final_newline.old.txt tests/fixtures/final_newline.new.txt
+```
+
+It distinguishes `alpha` from `alpha` followed by a final newline. The fixture suite also checks CRLF, Unicode, repeated lines, empty files, and patch application with `git apply`.
+
+## Install this checkout
+
 ```bash
 git clone https://github.com/OthmaneBlial/linediff.git
 cd linediff
-pip install -e .
+python3 -m venv .venv
+.venv/bin/python -m pip install .
+.venv/bin/linediff --help
 ```
 
-### Optional Tree-sitter parsers
+On Windows, use `py -m venv .venv` and `.venv\Scripts\python -m pip install .`. The [installation guide](docs/installation.md) covers optional grammars and developer setup. The package has no required runtime dependencies; its Python structural summary uses the standard library AST.
 
-On development `main`, the Python structural view works without Tree-sitter. To test the optional parsers **from this checkout** before a new package release, run:
+## Use it
 
-```bash
-# Python grammar only (Python 3.10+)
-pip install -e '.[python]'
+| Command | Result |
+| --- | --- |
+| `linediff OLD NEW` | Exact unified text diff; successful display exits `0` even if files differ. |
+| `linediff --display structural OLD.py NEW.py` | Python definition summary plus the exact text diff; human-readable, not an applicable patch. |
+| `linediff --display side-by-side --width 80 OLD NEW` | Numbered columns with visible truncation for narrow terminals. |
+| `linediff --display inline OLD NEW` | Human-readable changed lines. |
+| `linediff --check-only OLD NEW` | Exit `0` same, `1` different, `2` error; no diff output. |
+| `linediff --diagnostics --display structural OLD NEW` | Route, parser and fallback reason on stderr. |
 
-# All eight registered grammars (Python 3.10+)
-pip install -e '.[tree-sitter]'
-```
+`--color auto` colors human-readable views only on a terminal and respects `NO_COLOR`. Use `--color always` or `--color never` to override. The unified patch is never colored.
 
-See the [tested support matrix](docs/PARSER_SUPPORT.md) before describing another language as structurally supported.
-
-## 🎯 Usage
-
-### Basic Diff Magic
-
-Compare any two files with intelligent diffing:
-
-```bash
-linediff file1.py file2.py
-```
-
-The current output is a line diff. The planned structural view is tracked in the roadmap.
-
-### Git Integration
-
-Run Git's external diff for one command, without changing repository or global configuration:
+For a one-shot Git review without changing global configuration:
 
 ```bash
 git -c diff.external=linediff diff --ext-diff
 git -c diff.external=linediff diff --cached --ext-diff
 ```
 
-The normal `git diff --no-ext-diff` remains available. Git invokes Linediff once per changed file; added and deleted text files are shown against `/dev/null`. Binary changes are reported by name. The one-shot command also shows renamed paths. This view is intended for review; use native `git diff` when you need the full Git patch format.
+Git invokes Linediff with its external-diff arguments. Added, deleted, changed, and renamed text files have been exercised in a temporary Git repository; binary changes get a status line. Native `git diff --no-ext-diff` remains the reference for Git's full patch and filters. See [usage](docs/usage.md) for stdin pairs and Git line-ending limits.
 
-### Check-Only Mode
+## What is supported
 
-For CI/CD pipelines, use `--check-only` to check if files differ without output:
+| Input | Current behavior |
+| --- | --- |
+| Python `.py`, `.pyw`, `.pyi` | Exact text diff; opt-in structural summary of top-level functions/classes and direct class methods. |
+| Other UTF-8 text | Exact text diff; explicit fallback when structural view is requested. |
+| Optional Tree-sitter grammars | Python source ranges and a parsing API; they do not add structural CLI views for other languages. |
+| Binary/non-UTF-8 files | File mode returns an error; Git external mode reports binary status. |
 
-```bash
-linediff --check-only file1.py file2.py
-echo $?  # 0 = identical, 1 = different, 2 = input or processing error
-```
+Each text operand is capped at 4 MiB, 20,000 lines, and 200,000 characters per line. Expensive line alignment becomes an exact whole-file replacement patch; Python structural analysis has tighter limits. See [limits](docs/LIMITS.md) and the [parser support matrix](docs/PARSER_SUPPORT.md). No general speed advantage over Git or another diff tool has been measured.
 
-### Language Override
-
-Override automatic language detection:
-
-```bash
-linediff --language javascript file1.txt file2.txt
-```
-
-### Display Modes
-
-Choose how your diffs are displayed:
-
-**Unified (default)** - Traditional diff format:
-```bash
-linediff file1.py file2.py
-```
-
-**Side-by-side** - See changes next to each other with color coding:
-```bash
-linediff --display side-by-side file1.py file2.py
-```
-
-**Inline** - Changes highlighted with ANSI colors:
-```bash
-linediff --display inline file1.py file2.py
-```
-
-### Reading from Stdin
-
-Linediff does not parse Git's unified diff stream from stdin. Git external diff invokes it with file arguments; see [Git Integration](#git-integration).
-
-Provide two UTF-8 texts via stdin with a line containing only `---` between them:
+## Develop and contribute
 
 ```bash
-cat > /tmp/diff_input << 'EOF'
-old content here
----
-new content here
-EOF
-
-linediff < /tmp/diff_input
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m pytest
+.venv/bin/ruff check src/linediff tests scripts
+.venv/bin/ruff format --check src/linediff tests scripts
 ```
 
-## 🌍 Language Support
-
-**Supported Languages:**
-
-| Language | Extensions |
-|----------|------------|
-| Python | `.py`, `.pyw`, `.pyi` |
-| JavaScript | `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs` |
-| JSON | `.json`, `.jsonc` |
-| HTML | `.html`, `.htm`, `.xml` |
-| CSS | `.css`, `.scss`, `.sass`, `.less` |
-| Rust | `.rs` |
-| Go | `.go` |
-| Java | `.java` |
-
-For unsupported languages, Linediff falls back to line-based diffing using Python's difflib.
-
-## 🎨 See Linediff in Action
-
-### Python Function Evolution
-
-**Before:**
-```python
-def calculate_total(items):
-    total = 0
-    for item in items:
-        total += item.price
-    return total
-```
-
-**After:**
-```python
-def calculate_total(items, tax_rate=0.08):
-    """Calculate total with tax."""
-    subtotal = sum(item.price for item in items)
-    tax = subtotal * tax_rate
-    return subtotal + tax
-```
-
-**Diff output:**
-```diff
---- old.py
-+++ new.py
-@@ -1,5 +1,6 @@
--def calculate_total(items):
--    total = 0
--    for item in items:
--        total += item.price
--    return total
-+def calculate_total(items, tax_rate=0.08):
-+    """Calculate total with tax."""
-+    subtotal = sum(item.price for item in items)
-+    tax = subtotal * tax_rate
-+    return subtotal + tax
-```
-
-### JavaScript Object Makeover
-
-**Before:**
-```javascript
-const config = {
-  apiUrl: "https://api.example.com",
-  timeout: 5000,
-  retries: 3
-};
-```
-
-**After:**
-```javascript
-const config = {
-  apiUrl: "https://api.example.com",
-  timeout: 10000,
-  retries: 3,
-  headers: {
-    "Authorization": "Bearer token"
-  }
-};
-```
-
-**Diff output:**
-```diff
---- config.js
-+++ config.js
-@@ -1,5 +1,8 @@
- const config = {
-   apiUrl: "https://api.example.com",
--  timeout: 5000,
-+  timeout: 10000,
-   retries: 3,
-+  headers: {
-+    "Authorization": "Bearer token"
-+  }
- };
-```
-
-### JSON Config Transformation
-
-**Before:**
-```json
-{
-  "database": {
-    "host": "localhost",
-    "port": 5432
-  },
-  "features": ["auth", "logging"]
-}
-```
-
-**After:**
-```json
-{
-  "database": {
-    "host": "prod-db.example.com",
-    "port": 5432,
-    "ssl": true
-  },
-  "features": ["auth", "logging", "metrics"]
-}
-```
-
-**Diff output:**
-```diff
---- config.json
-+++ config.json
-@@ -1,6 +1,8 @@
- {
-   "database": {
--    "host": "localhost",
-+    "host": "prod-db.example.com",
-     "port": 5432,
-+    "ssl": true
-   },
-   "features": ["auth", "logging", "metrics"]
- }
-```
-
-## How It Works
-
-The default output is an exact line diff. The separate `--display structural` view uses Python's AST to match functions, classes and direct class methods, and a longest common subsequence of definition names to flag moves. Optional Tree-sitter supplies source ranges when installed. The structural view always includes the exact text diff; unsupported languages and invalid Python use an explicit text fallback. See the [API description](docs/api.md) for its limits.
-
-## Performance
-
-The [local baseline](docs/BASELINE.md) records reproducible timing and memory measurements of the pre-fix line-diff engine. No speed or memory advantage over another tool has been verified. Performance limits for the structural view are tracked in the roadmap.
-
-## 🛠️ Development
-
-### Get Started Contributing
-
-**Set up your dev environment:**
-
-```bash
-git clone https://github.com/OthmaneBlial/linediff.git
-cd linediff
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -e ".[dev]"
-```
-
-### Run the Test Suite
-
-```bash
-pytest  # Fast, comprehensive testing
-```
-
-### Comprehensive Testing Suite
-
-For an interactive testing experience with various scenarios and display modes:
-
-```bash
-./test_linediff.sh
-```
-
-This provides a menu-driven interface to test different file types, languages, and display modes with real example files.
-
-### Building Documentation
-
-```bash
-# Generate documentation (if applicable)
-```
-
-### Code Quality
-
-```bash
-# Run linting
-flake8 src/
-
-# Run type checking
-mypy src/
-
-# Format code
-black src/
-```
-
-
-## 📚 Documentation
-
-Comprehensive documentation is available in the [`docs/`](docs/) directory:
-
-- [Installation Guide](docs/installation.md)
-- [Usage Guide](docs/usage.md)
-- [API Reference](docs/api.md)
-- [Examples](docs/examples.md)
-- [FAQ](docs/faq.md)
-- [Contributing Guide](CONTRIBUTING.md)
-
-For online documentation, visit [https://github.com/OthmaneBlial/linediff/blob/main/docs/index.md](https://github.com/OthmaneBlial/linediff/blob/main/docs/index.md).
-
-## 🤝 Contributing
-
-**Join the revolution!** We love contributions from developers like you.
-
-Check out our [Contributing Guide](CONTRIBUTING.md) for the full details.
-
-### Quick Contribution Flow
-
-1. 🍴 Fork the repository
-2. 🌿 Create a feature branch: `git checkout -b feature/amazing-idea`
-3. 💻 Make your awesome changes
-4. ✅ Add comprehensive tests
-5. 🚀 Ensure all tests pass: `pytest`
-6. 📤 Submit a pull request
-
-### Add a New Language
-
-**Expand Linediff's universe:**
-
-1. Add tree-sitter parser to `pyproject.toml`
-2. Configure language support in `parser.py`
-3. Write tests for the new language
-4. Update this README with examples
+Read [CONTRIBUTING.md](CONTRIBUTING.md), the [developer API](docs/api.md), and the [product contract](docs/PRODUCT.md). The CI workflow runs a Python and OS matrix, optional grammar profiles, formatting, linting, and wheel/sdist smoke checks; inspect its [current results](https://github.com/OthmaneBlial/linediff/actions/workflows/ci.yml) before relying on a green status.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-**Standing on the shoulders of giants:**
-
-- Powered by [Tree-sitter](https://tree-sitter.github.io/) for syntax parsing
-- Built with [Python](https://www.python.org/) and cutting-edge algorithms
-- Community-driven development with ❤️
+[MIT](LICENSE).

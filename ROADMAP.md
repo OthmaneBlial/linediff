@@ -61,7 +61,7 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 1.1 Réparer la comparaison fidèle des textes
 
-- [ ] **Implémenté et validé sur macOS arm64; validation Linux/Windows en attente.** Les 14 fixtures texte distinguent maintenant fins de ligne et saut final; `git apply` reconstruit exactement les fichiers de sortie. La suite locale actuelle passe. Ne cocher qu'après la matrice de la phase 4.
+- [x] **Terminé et vérifié (19 septembre 2026).** Les fixtures texte distinguent fins de ligne et saut final; `git apply` reconstruit exactement les fichiers de sortie. La matrice GitHub Actions des runs `35442699106` et `35442835093` a réussi sur Linux, macOS et Windows avec Python 3.8–3.14.
 
 - **Objectif :** ne jamais déclarer identiques deux fichiers dont le contenu diffère.
 - **Changements :** remplacer l'usage de `splitlines()` qui efface l'information de fin de ligne, représenter correctement `\n`, `\r\n` et l'absence de saut final; définir le comportement des fichiers vides, lignes répétées et contenus Unicode; produire des hunks et en-têtes de diff unifié corrects sans les dupliquer.
@@ -83,7 +83,7 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 1.3 Prouver l'intégration Git avant de la recommander
 
-- [x] **Terminé sur macOS arm64 (19 septembre 2026); Linux/Windows non vérifiés.** Un vrai dépôt temporaire couvre modification, création, suppression, renommage à neuf arguments, binaire, fichier avec espaces et retour à `git diff --no-ext-diff`. La commande du README a été exécutée avec le binaire installé dans un environnement isolé. Les plateformes restantes seront exercées par la matrice de la phase 4.
+- [x] **Terminé et vérifié (19 septembre 2026).** Un vrai dépôt temporaire couvre modification, création, suppression, renommage à neuf arguments, binaire, fichier avec espaces et retour à `git diff --no-ext-diff`. La commande du README a été exécutée avec le binaire installé dans un environnement isolé. Les mêmes tests passent dans les runs GitHub Actions `35442699106` et `35442835093` sur Linux, macOS et Windows; un filtre Git de fins de ligne peut encore modifier les octets des opérandes pour un changement ordinaire, limite documentée.
 
 - **Objectif :** fournir un parcours Git fiable, limité et réversible.
 - **Changements :** tester réellement les protocoles à sept et neuf arguments de `git diff --ext-diff`; traiter création, suppression, renommage, fichiers temporaires et binaires; choisir une commande d'activation locale au dépôt et de désactivation; retirer la recommandation de configuration globale tant que tous les cas ne passent pas.
@@ -177,7 +177,7 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 4.2 Faire de la CI une barrière de qualité (P0)
 
-- [ ] **En cours (19 septembre 2026).** Workflow refait avec permissions `contents: read`, contrôle Ruff bloquant, matrice base 3 OS × Python 3.8–3.14, profils de grammaires Python/complet sur 3 OS, puis build wheel/sdist, `twine check` et smoke hors checkout. `actionlint`, Ruff, suite locale et installation des deux artefacts passent sur macOS. Exécution GitHub Actions de la nouvelle matrice et inspection des logs non encore vérifiées; ne pas déclarer la CI verte.
+- [ ] **En cours (19 septembre 2026).** Workflow refait avec permissions `contents: read`, contrôle Ruff bloquant, matrice base 3 OS × Python 3.8–3.14, profils de grammaires Python/complet sur 3 OS, puis build wheel/sdist, `twine check` et smoke hors checkout. Les 29 jobs des runs `35442699106` et `35442835093` ont réussi sur GitHub après correction des défauts Windows observés dans les runs précédents. Une PR de test et le nouveau contrôle des liens ajouté ensuite restent à vérifier; ne pas attribuer la réussite des runs antérieurs à ce contrôle inédit.
 
 - **Objectif :** prouver que le produit s'installe, fonctionne et se construit sur les plateformes annoncées.
 - **Changements :** matrice Python réellement supportée sur Linux/macOS/Windows, jobs avec/sans grammaires, lint strict, format, typage si l'API le revendique, tests Git, build wheel/sdist, installation puis smoke test des artefacts; fixer permissions minimales et versions d'actions; supprimer `--exit-zero` des contrôles attendus bloquants.
@@ -209,6 +209,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 - **Dépendances / risques :** dépend de 2.2 et 4.2; les grammaires natives peuvent limiter la liste de plateformes.
 
 ### 5.2 Réécrire la documentation sur les capacités observées
+
+- [ ] **En cours (19 septembre 2026).** README et guides `PRODUCT`, index, FAQ, usage et exemples réécrits autour de la CLI actuelle; promesses multilangues, performances, téléchargements et site non vérifiés retirés. `scripts/check_docs.py` vérifie les liens locaux (15 fichiers) et l'exemple du quickstart est lié à un test. Rendu Markdown GitHub et nouvelle exécution CI avec ce contrôle restent à examiner.
 
 - **Objectif :** restaurer la confiance et réduire le temps jusqu'à la première preuve.
 - **Changements :** resserrer README autour du problème, de la démo réelle, de l'installation, des commandes exactes et des limites; corriger version et liens obsolètes dans `docs/`; retirer chiffres de performance non mesurés et promesses de cache, langages ou hébergement non validés; choisir une seule source de documentation en ligne ou rester sur GitHub tant que le site n'est pas publié.

@@ -4,7 +4,7 @@ The current `main` branch has changes newer than the tagged 0.1.3 package. This 
 
 ## Base CLI
 
-Python 3.8 or newer and `pip` are required by the package metadata. Local verification has used Python 3.14 on macOS; the three-OS version matrix is running in CI.
+Python 3.8 or newer and `pip` are required by the package metadata. The checkout installation passed GitHub Actions tests on Linux, macOS and Windows with Python 3.8–3.14 in runs `35442699106` and `35442835093`. This does not verify a public release or a standalone executable.
 
 ```bash
 git clone https://github.com/OthmaneBlial/linediff.git
