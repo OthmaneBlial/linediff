@@ -131,7 +131,7 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 3.1 Maîtriser performance et entrées adverses
 
-- [ ] **En cours (19 septembre 2026).** Limites locales de 4 MiB/20 000 lignes/200 000 caractères, seuil d'alignement de 8 millions de paires avec patch complet applicable, repli structurel à 1 MiB/500 définitions; tests d'entrées volumineuses et `git apply` verts. Mesure locale consignée dans `docs/LIMITS.md`; budgets sur autres OS et timeouts CI restent à valider.
+- [ ] **En cours (19 septembre 2026).** Limites locales de 4 MiB/20 000 lignes/200 000 caractères, seuil d'alignement de 8 millions de paires avec patch complet applicable, repli structurel à 1 MiB/500 définitions; tests d'entrées volumineuses et `git apply` verts. Le benchmark a maintenant un timeout de 15 secondes par processus et une mesure RSS Windows optionnelle via psutil; un job CI relève trois répétitions par OS. La nouvelle mesure locale est consignée dans `docs/LIMITS.md`; résultats et budgets Linux/Windows/macOS CI restent à examiner avant de cocher.
 
 - **Objectif :** éviter une explosion de mémoire ou une sortie inutilisable sur des fichiers réels.
 - **Changements :** borner taille/complexité avant la construction de graphes quadratiques, traiter gros fichiers, longues lignes, profondeur AST, fichiers binaires et répertoires; définir budgets de temps/mémoire et chemin de repli; limiter les allocations et la récursion non bornée.

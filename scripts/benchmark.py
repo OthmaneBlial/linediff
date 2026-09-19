@@ -8,7 +8,6 @@ resident memory is measured per case rather than across previous cases.
 
 import argparse
 import json
-import os
 import platform
 import statistics
 import subprocess
@@ -33,7 +32,6 @@ def worker(case_id):
     except ImportError:
         resource = None
 
-    sys.path.insert(0, str(ROOT / "src"))
     from linediff.diff import compute_diff
 
     case = case_by_id(case_id)
@@ -49,6 +47,13 @@ def worker(case_id):
     if resource is not None:
         raw = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         rss_mib = raw / (1024 * 1024) if sys.platform == "darwin" else raw / 1024
+    elif sys.platform == "win32":
+        try:
+            import psutil
+        except ImportError:
+            pass
+        else:
+            rss_mib = psutil.Process().memory_info().peak_wset / (1024 * 1024)
     print(
         json.dumps(
             {"engine_ms": engine_ms, "peak_rss_mib": rss_mib, "lines": len(diff)}
@@ -59,6 +64,7 @@ def worker(case_id):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repeats", type=int, default=5)
+    parser.add_argument("--timeout-seconds", type=int, default=15)
     parser.add_argument("--worker", choices=SELECTED)
     args = parser.parse_args()
     if args.worker:
@@ -66,10 +72,9 @@ def main():
         return
     if args.repeats < 1:
         parser.error("--repeats must be positive")
+    if args.timeout_seconds < 1:
+        parser.error("--timeout-seconds must be positive")
 
-    env = os.environ.copy()
-    env["PYTHONDONTWRITEBYTECODE"] = "1"
-    env["PYTHONPATH"] = str(ROOT / "src")
     results = []
     for case_id in SELECTED:
         case = case_by_id(case_id)
@@ -80,10 +85,10 @@ def main():
             proc = subprocess.run(
                 [sys.executable, str(Path(__file__).resolve()), "--worker", case_id],
                 cwd=ROOT,
-                env=env,
                 capture_output=True,
                 text=True,
                 check=True,
+                timeout=args.timeout_seconds,
             )
             sample = json.loads(proc.stdout)
             engine_times.append(sample["engine_ms"])
@@ -101,10 +106,10 @@ def main():
                     case["right"],
                 ],
                 cwd=ROOT,
-                env=env,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
                 check=False,
+                timeout=args.timeout_seconds,
             )
             cli_times.append((time.perf_counter_ns() - started) / 1_000_000)
             if cli.returncode not in (0, 1):
@@ -140,6 +145,7 @@ def main():
                 "machine": platform.machine(),
                 "python": platform.python_version(),
                 "repeats": args.repeats,
+                "timeout_seconds": args.timeout_seconds,
                 "results": results,
             },
             indent=2,

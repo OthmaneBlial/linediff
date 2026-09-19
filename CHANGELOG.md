@@ -12,6 +12,7 @@ All notable changes to this project will be documented here.
 - Guard terminal output against unsafe file and Git diff content; replace the release uploader with a read-only candidate preparation flow.
 - Reject non-regular file operands and add known-vulnerability and Git history secret checks to CI.
 - Add a candidate-only standalone CLI build and archive smoke checks for the supported host OSes.
+- Measure benchmark fixtures with per-process timeouts and cross-platform CI artifacts.
 
 ## [0.1.3] - 2025-11-15
 
