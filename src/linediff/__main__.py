@@ -4,6 +4,7 @@
 import argparse
 import sys
 import os
+import shutil
 from .diff import compute_diff
 from .inputs import LinediffInputError, read_file_content, read_git_bytes, read_stdin_content, parse_pair_stdin
 from .languages import KNOWN_LANGUAGES, detect_language
@@ -21,7 +22,17 @@ def main() -> int:
                        help="Display mode for diffs (default: unified)")
     parser.add_argument("--diagnostics", action="store_true",
                         help="Report the actual comparison route and fallback on stderr")
+    parser.add_argument("--color", choices=['auto', 'always', 'never'], default='auto',
+                        help="Color for human-readable views (default: auto)")
+    parser.add_argument("--width", type=int, help="Maximum width of side-by-side output (minimum: 40)")
     args = parser.parse_args()
+    if args.width is not None and args.width < 40:
+        parser.error("--width must be at least 40")
+    use_color = args.color == 'always' or (
+        args.color == 'auto' and sys.stdout.isatty() and 'NO_COLOR' not in os.environ
+        and os.environ.get('TERM') != 'dumb'
+    )
+    output_width = args.width or shutil.get_terminal_size((100, 24)).columns
 
     git_mode = len(args.files) in (7, 9)
     modes_differ = False
@@ -114,7 +125,10 @@ def main() -> int:
         else:
             if args.diagnostics:
                 print("Diagnostic: route=exact-text; language={}".format(lang), file=sys.stderr)
-            formatted_diff = format_diff(diff_lines, fromfile, tofile, lang, args.display)
+            formatted_diff = format_diff(
+                diff_lines, fromfile, tofile, lang, args.display,
+                color=use_color, width=output_width,
+            )
         print(formatted_diff, flush=True)
     except BrokenPipeError:
         # Avoid another broken pipe while Python flushes stdout on shutdown.

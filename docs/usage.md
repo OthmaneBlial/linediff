@@ -27,6 +27,9 @@ linediff [OPTIONS] FILE1 FILE2
 - `--check-only`: Check if files are identical (`0` same, `1` different, `2` input or processing error)
 - `--language LANG`: Override automatic language detection
 - `--display MODE`: `unified` (default), `side-by-side`, `inline`, or `structural`
+- `--color auto|always|never`: Color in human-readable views. `auto` uses a TTY and respects `NO_COLOR`; the unified patch is never colored.
+- `--width N`: Maximum side-by-side width in terminal cells (minimum 40; default is the detected terminal width)
+- `--diagnostics`: Write the selected analysis route or fallback reason to stderr
 - `--help`: Show help message
 
 ## Display Modes
@@ -63,6 +66,8 @@ See changes next to each other:
 ```bash
 linediff --display side-by-side file1.py file2.py
 ```
+
+Adjacent removals and additions share rows with their original line numbers. Long columns are marked with `…`; use a wider terminal or the unified view to see full lines. Redirected output has no ANSI color by default.
 
 ### Inline
 

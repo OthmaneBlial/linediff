@@ -142,6 +142,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 3.2 Donner une vraie UX de lecture des changements
 
+- [ ] **En cours (19 septembre 2026).** Couleur `auto/always/never`, respect de `NO_COLOR` en mode auto, largeur terminal/`--width`, colonnes avec numéros de lignes, troncature visible et sommaire sont implémentés; tests 80/120 colonnes, Unicode large, redirection et caractères de contrôle passent. Captures réelles et revue sur fonds clair/sombre restent à faire.
+
 - **Objectif :** rendre le résultat scannable dans un terminal ordinaire et dans un README.
 - **Changements :** couleur `auto/always/never` selon TTY et `NO_COLOR`, entêtes et statuts cohérents, largeur terminal mesurée, troncature ou retour à la ligne contrôlé, colonnes alignées pour ajouts/suppressions, positions de lignes, signal de déplacement et sommaire; éviter les codes ANSI dans fichiers redirigés.
 - **Fichiers :** fonctions `format_*` de `src/linediff/__main__.py` ou nouveau `render.py`, tests CLI, exemples `data/`.
