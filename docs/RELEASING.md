@@ -12,6 +12,8 @@ No new release is implied by a green CI run or an Actions artifact. The tags thr
 
 The current source version is `0.2.0a1`, with a dated candidate section in the changelog and no corresponding tag. The candidate preflight can now check this version. The existing `scripts/release-kit.sh` upload path was removed because it could mutate and publish before validation.
 
+Review the [draft 0.2.0a1 notes](RELEASE_NOTES_0.2.0a1.md) against the final candidate commit before any approval or publication.
+
 ## Publication gate
 
 Before any public publication, review the exact commit, version, notes, artifact hashes, supported platform claims, workflow permissions and target accounts. Use an explicitly approved publication path with short-lived identity where available. Then verify the remote GitHub Release and PyPI page separately, download their artifacts, compare hashes, install from the downloaded files and run the product smoke scenarios. Record the result and only then add public release links to the README. No publication workflow or credential is configured in this repository yet.

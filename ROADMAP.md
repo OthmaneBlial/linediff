@@ -258,6 +258,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 6.3 Vérifier la publication de bout en bout
 
+- [ ] **Préparé localement (19 septembre 2026).** Le brouillon de notes `docs/RELEASE_NOTES_0.2.0a1.md` distingue capacités, compatibilité, changement de code de sortie, limites et preuves requises. Une construction candidate locale sur le commit `b0ffa31` a réussi, mais `main` a évolué et doit être reconstruit au commit final. Aucune GitHub Release, fiche PyPI ou installation depuis une distribution publique n'a été vérifiée; la publication attend l'autorisation du mainteneur.
+
 - **Objectif :** distinguer build réussi, publication et installation par un tiers.
 - **Changements :** préparer notes, version cible et liste d'artefacts; après autorisation de publication, vérifier la GitHub Release et, si utilisée, la fiche PyPI; télécharger les artefacts publiés et les réinstaller hors du checkout; mettre à jour les liens et badges uniquement sur preuves.
 - **Fichiers :** `CHANGELOG.md`, `README.md`, `docs/RELEASING.md`, workflow de release.

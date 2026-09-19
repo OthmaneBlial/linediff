@@ -6,6 +6,7 @@ All notable changes to this project will be documented here.
 - Download and smoke-test the built wheel and source archive on Linux, macOS and Windows at the Python 3.8 and 3.14 support boundaries.
 - Add a dated, reproducible development comparison with Git, Difftastic and delta, including raw outputs and measured limitations.
 - Remove an obsolete PyPI-token environment template from the former release process.
+- Gate candidate standalone builds on cross-platform smoke tests of the wheel and source archive; prepare consented user-trial protocol and draft candidate release notes.
 
 ## [0.2.0a1] - 2026-09-19
 

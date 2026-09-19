@@ -20,7 +20,7 @@ The primary user compares local Python revisions, often through Git. A named def
 
 ## Structural scope
 
-Python's standard AST matches top-level functions/classes and direct class methods by qualified name and source order. The optional Tree-sitter Python grammar can supply byte-accurate source ranges; without it, AST ranges are used. LCS anchors flag moved top-level definitions. Repeated definition names, syntax errors, and resource budgets cause an explicit text fallback. Code outside indexed definitions is still present in the exact text diff. The view does not establish semantic equivalence.
+Python's standard AST matches top-level functions/classes and direct class methods by qualified name and source order. The optional Tree-sitter Python grammar can supply byte-accurate source ranges; without it, AST ranges are used. LCS anchors flag moved top-level definitions. When two unchanged definitions exchange places, either one can reasonably be called moved; the label is a heuristic, and the exact text diff remains the source of truth. Repeated definition names, syntax errors, and resource budgets cause an explicit text fallback. Code outside indexed definitions is still present in the exact text diff. The view does not establish semantic equivalence.
 
 The fixture corpus exercises a moved function, a changed signature and body, and a changed class method. `tests/test_structural.py` checks names, change kinds, details, and ranges. `tests/test_exact_diff.py` applies generated patches to the text fixture corpus. [Parser support](PARSER_SUPPORT.md) distinguishes installed grammars from CLI structural views.
 

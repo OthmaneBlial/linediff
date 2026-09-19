@@ -19,6 +19,7 @@ Linediff compares UTF-8 text in a terminal and can add a Python definition summa
 - [Contribution guide](../CONTRIBUTING.md)
 - [Support](../SUPPORT.md) and [security reporting](../SECURITY.md)
 - [Release preparation](RELEASING.md)
+- [Draft 0.2.0a1 release notes](RELEASE_NOTES_0.2.0a1.md)
 - [Roadmap](../ROADMAP.md)
 
 Documentation lives in this repository. No separate documentation site has been verified for the current version.
