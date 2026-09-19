@@ -37,6 +37,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 0.1 Définir les modes et les garanties du produit
 
+- [x] **Terminé localement (19 septembre 2026).** Contrat cible et limites actuelles dans `docs/PRODUCT.md`, plan de tests dans `tests/TEST_PLAN.md`. Les trois scénarios ont été comparés au moteur actuel et à `difflib` : la baseline est bien un diff ligne. Le comportement cible reste à implémenter dans les phases suivantes.
+
 - **Objectif :** choisir une proposition de valeur réalisable et un contrat que tests, CLI et documentation partagent.
 - **Changements :** écrire des spécifications courtes pour la comparaison de fichiers, le mode syntaxique Python, le fallback texte, le format unifié, `--check-only`, l'entrée stdin et le cas Git; établir explicitement ce qui est *différenciation*, *préservation exacte* et *simple affichage*; décider si l'entrée de diff unifié depuis stdin sera réellement supportée ou retirée des exemples.
 - **Fichiers :** nouveau `docs/PRODUCT.md`, `docs/usage.md`, `README.md`, plan de tests dans `tests/`.

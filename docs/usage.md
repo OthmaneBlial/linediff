@@ -1,5 +1,7 @@
 # Usage Guide
 
+> Version 0.1.3 currently falls back to line diffing. The [product contract](PRODUCT.md) distinguishes observed behavior from the planned structural view. The `---` separator accepted on stdin is a Linediff-specific pair format; `git diff | linediff` is not supported by this version.
+
 This guide covers all the ways to use Linediff for comparing files and integrating with your workflow.
 
 ## Basic Usage

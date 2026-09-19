@@ -1,5 +1,7 @@
 # Linediff
 
+> **Current status (0.1.3):** the CLI produces line diffs; its claimed syntax-aware comparison is not yet working. See the [product contract](docs/PRODUCT.md) and [roadmap](ROADMAP.md) for the verified limits and planned fixes.
+
 [![PyPI version](https://badge.fury.io/py/linediff.svg)](https://pypi.org/project/linediff/)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
