@@ -153,6 +153,8 @@ Le dépôt se compare lui-même à `git diff`, mais n'apporte actuellement aucun
 
 ### 3.3 Offrir un démarrage démontrable en une minute
 
+- [x] **Terminé localement sur macOS arm64 (19 septembre 2026).** `docs/QUICKSTART.md` utilise les fixtures réelles et une installation locale dans un venv neuf; `--help`, vue structurelle et colonnes ont été exécutés depuis ce venv. `tests/test_quickstart.py` compare l'exemple documenté à la sortie réelle. Le parcours Windows reste soumis à la matrice de 4.2.
+
 - **Objectif :** permettre de constater la valeur sans configuration globale de Git.
 - **Changements :** ajouter une commande ou un jeu d'exemples reproductibles inclus dans le dépôt, une sortie attendue maintenue par tests et un parcours « installer → comparer → comprendre le résultat → intégrer localement à Git »; ne pas fabriquer d'écrans ni de résultats.
 - **Fichiers :** `README.md`, `data/`, `docs/examples.md`, éventuellement `scripts/demo.sh`, tests de smoke.
