@@ -3,6 +3,12 @@ All notable changes to this project will be documented here.
 
 ## Unreleased (`main`, not published)
 
+No changes have been recorded after the `0.2.0a1` candidate preparation.
+
+## [0.2.0a1] - 2026-09-19
+
+Candidate source only. No tag, GitHub Release, PyPI upload, or public standalone download is implied by this section.
+
 - Preserve CRLF and final-newline differences in applicable unified patches; distinguish `--check-only` results from errors.
 - Add an opt-in Python definition view for moves, signature/body changes and direct class methods, with explicit text fallback and diagnostics.
 - Validate optional Tree-sitter installation profiles; remove unreachable graph diff code.
@@ -14,6 +20,9 @@ All notable changes to this project will be documented here.
 - Add a candidate-only standalone CLI build and archive smoke checks for the supported host OSes.
 - Measure benchmark fixtures with per-process timeouts and cross-platform CI artifacts.
 - Add real terminal capture assets for structural, column and inline views, with test-checked provenance.
+- Add a real Git external-diff capture and reproducible terminal output tests, including LF fixtures for Windows.
+- Add four isolated mutation probes and subprocess-aware branch coverage evidence for critical paths.
+- Align package metadata with the tested Python matrix and document the Python 3.8 license-metadata tradeoff.
 
 ## [0.1.3] - 2025-11-15
 

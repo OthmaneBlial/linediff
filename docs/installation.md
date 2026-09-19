@@ -1,6 +1,6 @@
 # Installation from the development checkout
 
-The current `main` branch has changes newer than the tagged 0.1.3 package. This guide installs the code in this checkout. A new public package or standalone executable has not yet been verified.
+The current `main` branch contains untagged `0.2.0a1` candidate source, newer than the tagged 0.1.3 code. This guide installs the code in this checkout. A new public package or standalone executable has not yet been verified.
 
 ## Base CLI
 

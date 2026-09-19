@@ -4,7 +4,7 @@
 
 Linediff is a terminal CLI for comparing two UTF-8 files. Its default output is a unified text diff. The opt-in `--display structural` view names changed or moved Python definitions and includes the exact text diff below the summary. The structural view is for reading, not for applying as a patch.
 
-> **Release status:** these changes are on development `main`. The repository has a `v0.1.3` tag, but no GitHub Release for this work has been verified. Install from this checkout to try the behavior described here. See the [roadmap](ROADMAP.md) for release gates.
+> **Release status:** `main` contains the untagged `0.2.0a1` candidate source. The older `v0.1.3` tag predates these changes. No GitHub Release or PyPI upload for `0.2.0a1` has been verified. Install from this checkout to try the behavior described here. See the [roadmap](ROADMAP.md) for release gates.
 
 ## See it on a real fixture
 
